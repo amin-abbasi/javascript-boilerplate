@@ -1,0 +1,39 @@
+{
+  "name": "micro-service-boilerplate",
+  "version": "1.0.0",
+  "description": "[Project Name] description",
+  "main": "init.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node init.js",
+    "run": "pm2 start init.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/amin4193/micro-service-boilerplate.git"
+  },
+  "keywords": [
+    "micro-service",
+    "boilerplate"
+  ],
+  "author": "AAH",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/amin4193/micro-service-boilerplate.git"
+  },
+  "homepage": "https://github.com/amin4193/micro-service-boilerplate.git#readme",
+  "dependencies": {
+    "@hapi/boom": "^9.1.0",
+    "body-parser": "^1.19.0",
+    "celebrate": "^12.1.1",
+    "cors": "^2.8.5",
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1",
+    "express-winston": "^4.0.3",
+    "helmet": "^3.22.0",
+    "lodash": "^4.17.15",
+    "mongoose": "^5.9.18",
+    "redis": "^3.0.2",
+    "winston": "^3.2.1"
+  }
+}
