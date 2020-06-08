@@ -2,9 +2,9 @@ const redis = require('redis')
 
 // TODO: Needs to be checked again for future uses
 // -------------------------------------- Initialize redis + config --------------------------------------
-module.exports = (app) => {
+module.exports = (config) => {
 
-  const REDIS_URL = process.env.REDIS_URL || 'http://localhost:6379'
+  const REDIS_URL = config.env.REDIS_URL || 'http://localhost:6379'
   const client    = redis.createClient(REDIS_URL)
   const { promisify } = require('util')
   const getAsync      = promisify(client.get).bind(client)

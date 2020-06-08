@@ -1,5 +1,6 @@
-// All Configs that needed to be centralized
+require('dotenv').config()
 
+// All Configs that needed to be centralized
 const config = {
 
   // JWT Configuration
@@ -11,6 +12,8 @@ const config = {
     allow_renew: true,
     renew_threshold: 60
   },
+
+  env: process.env
 
   // MS Configs
   // MS: {

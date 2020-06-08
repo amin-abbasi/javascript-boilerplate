@@ -3,7 +3,7 @@ const http   = require('http')
 // const Jwt    = require('jsonwebtoken')
 // const moment = require('moment')
 
-module.exports = (app) => {
+module.exports = (config) => {
 
   /**
    * Find Property
@@ -35,24 +35,24 @@ module.exports = (app) => {
   // JWT Token Functions
   const jwt = {
     // Creates JWT Token
-    create (data, expire = app.config.jwt.expiration) {
-      return Jwt.sign(data, app.config.jwt.key, { expiresIn: expire, algorithm: app.config.jwt.algorithm })
+    create (data, expire = config.jwt.expiration) {
+      return Jwt.sign(data, config.jwt.key, { expiresIn: expire, algorithm: config.jwt.algorithm })
     },
 
     // Creates Non Expire JWT Token (Caching is temporarily disabled)
     createNonExpire (data) {
-      // let redis = app.plugins['hapi-redis'].client
-      let token = Jwt.sign(data, app.config.jwt.key, { algorithm: app.config.jwt.algorithm })
-      // let key = `${app.config.jwt.cache_prefix}${token}`
+      // let redis = plugins['hapi-redis'].client
+      let token = Jwt.sign(data, config.jwt.key, { algorithm: config.jwt.algorithm })
+      // let key = `${config.jwt.cache_prefix}${token}`
       // redis.set(key, 'valid')
       return token
     },
 
-    // Blocks JWT Token from cache
+    // FIXME: Blocks JWT Token from cache
     block (token) {
-      // let decoded = Jwt.decode(token, app.config.jwt.key)
-      // let redis = app.plugins['hapi-redis'].client
-      // let key = `${app.config.jwt.cache_prefix}${token}`
+      // let decoded = Jwt.decode(token, config.jwt.key)
+      // let redis = plugins['hapi-redis'].client
+      // let key = `${config.jwt.cache_prefix}${token}`
       // if(!(decoded.exp == null || decoded.exp == undefined )) {
       //   let expiration = decoded.exp - moment().unix()
       //   redis.multi().set(key, "blocked").expire(key, expiration).exec()
@@ -65,29 +65,29 @@ module.exports = (app) => {
     // Renew JWT Token when is going to be expired
     renew (token, routePlugins, expire) {
       if(!token) throw new Error('Token is undefined')
-      if((!app.config.jwt.allow_renew && routePlugins.jwtRenew == undefined) || (routePlugins.jwtRenew == false))
+      if((!config.jwt.allow_renew && routePlugins.jwtRenew == undefined) || (routePlugins.jwtRenew == false))
         throw new Error('Renewing tokens is not allowed')
-      let decoded = Jwt.decode(token, app.config.jwt.key)
+      let decoded = Jwt.decode(token, config.jwt.key)
       if(decoded.exp == null || decoded.exp == undefined) return token
 
       // TODO: Check moment().unix() vs. Date.now()
-      // if( (decoded.exp - moment().unix()) > app.config.jwt.renew_threshold ) return token
-      if( (decoded.exp - Date.now()) > app.config.jwt.renew_threshold ) return token
+      // if( (decoded.exp - moment().unix()) > config.jwt.renew_threshold ) return token
+      if( (decoded.exp - Date.now()) > config.jwt.renew_threshold ) return token
 
       // this.block(token, decoded)
       delete decoded.iat
       delete decoded.exp
-      return this.create(decoded, expire || app.config.jwt.expiration)
+      return this.create(decoded, expire || config.jwt.expiration)
     },
 
     // Checks the validity of JWT Token
     isValid (token) {
       // return new Promise((resolve, reject) => {
-      //   let redis = app.plugins['hapi-redis'].client
-      //   let key = `${app.config.jwt.cache_prefix}${token}`
+      //   let redis = plugins['hapi-redis'].client
+      //   let key = `${config.jwt.cache_prefix}${token}`
       //   redis.get(key, (err, value) => {
       //     if(err) return reject(Error('Can not validate because cache app is not responsive'))
-      //     let decoded = Jwt.decode(token, app.config.jwt.key)
+      //     let decoded = Jwt.decode(token, config.jwt.key)
       //     if(!(decoded.exp == null || decoded.exp == undefined)) {
       //       if(value === null) return resolve(true)
       //       resolve(false)

@@ -1,8 +1,8 @@
 const mongoose = require('mongoose')
 
-module.exports = () => {
+module.exports = (config) => {
   // Database URL
-  const dbURL = `mongodb://${process.env.DB_HOST}:${process.env.DB_PORT}/${process.env.DB_NAME}`
+  const dbURL = `mongodb://${config.env.DB_HOST}:${config.env.DB_PORT}/${config.env.DB_NAME}`
 
   // Import the mongoose module
   mongoose.connect(dbURL, { useNewUrlParser: true, useFindAndModify: false, useCreateIndex: true, useUnifiedTopology: true })

@@ -2,55 +2,47 @@ const { celebrate, Joi } = require('celebrate')
 const _      = require('lodash')
 Joi.objectId = () => Joi.string().regex(/^[0-9a-fA-F]{24}$/)
 
-module.exports = (app) => {
-  return {
+module.exports = {
 
-    // Health Check Server (returns 200)
-    healthcheck: celebrate({ query: {} }),
+  // Create new Sample
+  create: celebrate({
+    // body: {
+    //   name: Joi.string().required().description('User Name'),
+    //   userId: Joi.objectId().required().description('User ID')
+    // },
+    query: {}
+  }),
 
-    // Home Page (For testing purposes)
-    home: celebrate({ query: {} }),
+  // List All Samples
+  list: celebrate({
+    query: {}
+  }),
 
-    // Create new Sample
-    create: celebrate({
-      // body: {
-      //   name: Joi.string().required().description('User Name'),
-      //   userId: Joi.objectId().required().description('User ID')
-      // },
-      query: {}
-    }),
+  // Show Sample Details
+  details: celebrate({
+    params: {
+      sampleId: Joi.objectId().required().description('Sample ID')
+    },
+    query: {}
+  }),
 
-    // List All Samples
-    list: celebrate({
-      query: {}
-    }),
+  // Update Sample
+  update: celebrate({
+    // body: {
+    //   name: Joi.string().description('User Name'),
+    //   userId: Joi.objectId().required().description('User ID')
+    // },
+    params: {
+      sampleId: Joi.objectId().required().description('Sample ID')
+    },
+    query: {}
+  }),
 
-    // Show Sample Details
-    details: celebrate({
-      params: {
-        sampleId: Joi.objectId().required().description('Sample ID')
-      },
-      query: {}
-    }),
-
-    // Update Sample
-    update: celebrate({
-      // body: {
-      //   name: Joi.string().description('User Name'),
-      //   userId: Joi.objectId().required().description('User ID')
-      // },
-      params: {
-        sampleId: Joi.objectId().required().description('Sample ID')
-      },
-      query: {}
-    }),
-
-    // Delete Sample (Soft Delete)
-    delete: celebrate({
-      params: {
-        sampleId: Joi.objectId().required().description('Sample ID')
-      },
-      query: {}
-    })
-  }
+  // Delete Sample (Soft Delete)
+  delete: celebrate({
+    params: {
+      sampleId: Joi.objectId().required().description('Sample ID')
+    },
+    query: {}
+  })
 }

@@ -116,3 +116,21 @@ module.exports = (app) => {
   }
 
 }
+
+// --------------- Swagger Models Definition ---------------
+/**
+ * @typedef Sample
+ * @property {string} userId.required - User ID
+ * @property {string} name.required - Sample Name
+ * @property {string} description.required - Some description for sample
+ * @property {integer} age - Some description for age - eg: 32
+ * @property {Array.<Client>} clients.required - List of clients participating in this sample
+ */
+
+/**
+ * @typedef Client
+ * @property {integer} name.required - Client name - eg: Moshanir Co.
+ * @property {integer} logoUrl - Client logo Url link
+ * @property {string} color
+ * @property {enum} status - Status values that need to be considered for filter - eg: available,pending
+ */
