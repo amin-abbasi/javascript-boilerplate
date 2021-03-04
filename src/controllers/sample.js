@@ -1,64 +1,48 @@
-const _       = require('lodash')
-const boom    = require('@hapi/boom')
-const config  = require('../configs/config')
-const Sample = require('../models/sample')
+import boom   from '@hapi/boom'
+import config from '../configs/config'
+import Sample from '../models/sample'
 
-module.exports = {
-
-  // Create Sample
-  create(req, res, next) {
+export async function create(req, res, next) {
+  try {
     const data = req.body
-    return Sample.create(data)
-      .then((result) => {
-        console.log(' --------------- Create Result: ', result)
-        res.result = result
-        next(res)
-      })
-      .catch(err => { console.log(' --------------- Create Error: ', err); next(err) })
-  },
+    const result = await Sample.create(data)
+    res.result = result
+    next(res)
+  } catch (error) { next(err) }
+}
 
-  // List all Sample
-  list(req, res, next) {
-    return Sample.list()
-      .then((result) => {
-        res.result = result
-        next(res)
-      })
-      .catch(err => { console.log(' --------------- List Error: ', err); next(err) })
-  },
+export function list(req, res, next) {
+  try {
+    const query = req.query
+    const result = await Sample.list(query)
+    res.result = result
+    next(res)
+  } catch (error) { next(err) }
+}
 
-  // Show Sample Details
-  details(req, res, next) {
-    return Sample.details(req.params.sampleId)
-      .then((result) => {
-        console.log(' --------------- Details Result: ', result)
-        res.result = result
-        next(res)
-      })
-      .catch(err => { console.log(' --------------- Details Error: ', err); next(err) })
-  },
-
-  // Update Sample
-  update(req, res, next) {
+export function details(req, res, next) {
+  try {
     const sampleId = req.params.sampleId
-    return Sample.updateById(sampleId, req.body)
-      .then((result) => {
-        console.log(' --------------- Update Result: ', result)
-        res.result = result
-        next(res)
-      })
-      .catch(err => { console.log(' --------------- Update Error: ', err); next(err) })
-  },
+    const result = await Sample.details(sampleId)
+    res.result = result
+    next(res)
+  } catch (error) { next(err) }
+}
 
-  // Delete Sample
-  delete(req, res, next) {
+export function update(req, res, next) {
+  try {
     const sampleId = req.params.sampleId
-    return Sample.delete(sampleId)
-      .then((result) => {
-        console.log(' --------------- Delete Result: ', result)
-        res.result = result
-        next(res)
-      })
-      .catch(err => { console.log(' --------------- Delete Error: ', err); next(err) })
-  }
+    const result = await Sample.updateById(sampleId, req.body)
+    res.result = result
+    next(res)
+  } catch (error) { next(err) }
+}
+
+export function remove(req, res, next) {
+  try {
+    const sampleId = req.params.sampleId
+    const result = await Sample.remove(sampleId)
+    res.result = result
+    next(res)
+  } catch (error) { next(err) }
 }

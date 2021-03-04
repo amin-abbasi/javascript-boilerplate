@@ -1,5 +1,5 @@
 const { celebrate, Joi } = require('celebrate')
-const _      = require('lodash')
+
 Joi.objectId = () => Joi.string().regex(/^[0-9a-fA-F]{24}$/)
 
 module.exports = {

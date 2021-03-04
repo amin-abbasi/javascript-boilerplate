@@ -1,5 +1,4 @@
 const mongoose = require('mongoose')
-const _        = require('lodash')
 const Boom     = require('@hapi/boom')
 // const uniqueV  = require('mongoose-unique-validator')
 
@@ -100,7 +99,7 @@ module.exports = (app) => {
         })
     }
 
-    static delete(modelNameId) {
+    static remove(modelNameId) {
       return this.details(modelNameId)
         .then(() => {
           return ModelName.findByIdAndUpdate(modelNameId, { deletedAt: new Date().getTime() }, { new: true })
