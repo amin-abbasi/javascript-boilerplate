@@ -1,15 +1,12 @@
-FROM node:12.17.0-alpine
+FROM node:12-alpine3.12 AS builder
 
-RUN npm install -g nodemon
+WORKDIR /usr/src
 
-
-WORKDIR /usr/src/app
+RUN ["npm", "install", "-g", "nodemon"]
 
 COPY package.json ./package.json
 RUN npm install
 
 COPY . .
-RUN npm install
 
-EXPOSE 3000
-CMD ["nodemon","init.js"]
+CMD ["nodemon"]

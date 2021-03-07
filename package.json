@@ -1,39 +1,52 @@
 {
-  "name": "micro-service-boilerplate",
+  "name": "javascript-boilerplate",
   "version": "2.0.0",
   "description": "[Project Name] description",
-  "main": "init.js",
+  "main": "./src/server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node init.js",
-    "run": "pm2 start init.js"
+    "start": "node ./src/server.js",
+    "test": "jest --updateSnapshot --detectOpenHandles --coverage --forceExit --verbose",
+    "run": "pm2 start ./src/server.js"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/amin4193/micro-service-boilerplate.git"
+    "url": "git+https://github.com/amin4193/javascript-boilerplate.git"
   },
   "keywords": [
-    "micro-service",
+    "javascript",
     "boilerplate"
   ],
   "author": "AAH",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/amin4193/micro-service-boilerplate.git"
+    "url": "https://github.com/amin4193/javascript-boilerplate/issues"
   },
-  "homepage": "https://github.com/amin4193/micro-service-boilerplate.git#readme",
+  "homepage": "https://github.com/amin4193/javascript-boilerplate.git#readme",
   "dependencies": {
     "@hapi/boom": "9.1.1",
-    "body-parser": "1.19.0",
     "celebrate": "13.0.4",
-    "cors": "2.8.5",
     "dotenv": "8.2.0",
     "express": "4.17.1",
-    "express-swagger-generator": "1.1.17",
     "express-winston": "4.1.0",
     "helmet": "4.4.1",
+    "jsonwebtoken": "8.5.1",
     "mongoose": "5.11.18",
+    "mongoose-unique-validator": "2.0.3",
+    "mysql": "2.18.1",
+    "node-fetch": "2.6.1",
     "redis": "3.0.2",
+    "reflect-metadata": "0.1.13",
+    "socket.io": "3.1.1",
+    "swagger-jsdoc": "6.0.6",
+    "swagger-ui-express": "4.1.6",
+    "typeorm": "0.2.31",
     "winston": "3.3.3"
+  },
+  "devDependencies": {
+    "eslint": "7.20.0",
+    "jest": "26.6.3",
+    "lint-staged": "10.5.4",
+    "prettier": "2.2.1",
+    "supertest": "6.1.3"
   }
 }

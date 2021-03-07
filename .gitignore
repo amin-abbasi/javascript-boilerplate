@@ -87,3 +87,9 @@ package-lock.json
 
 # vscode file
 .vscode
+
+# test snapshots folder
+__snapshots__
+
+# ssl Certificate folder
+# sslCert/*

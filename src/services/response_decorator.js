@@ -1,21 +1,30 @@
 const { STATUS_CODES } = require('http')
+const config = require('../configs')
 
-module.exports = (err, req, res, next) => {
+function decorator(err, req, res, next) {
 
+  // mongoose-unique-validator error
+  if(err._message.includes('validation failed')) {
+    err.statusCode = 400
+    err.message = err._message
+    err.data = JSON.parse(JSON.stringify(err.errors))
+    console.log(' ------- ResDec - Mongoose-Unique-Validator ERROR:', err)
+  }
 
   if(err.isBoom) {
     err.statusCode = err.output.statusCode
     err.message = err.output.payload.message
-    console.log(' ------- Response Decorator - BOOM ERROR:', err)
+    console.log(' ------- ResDec - BOOM ERROR:', err)
   }
 
   if(err.joi) {
     err.statusCode = 400
     err.message = err.joi.details
-    console.log(' ------- Response Decorator - JOI ERROR:', err)
+    console.log(' ------- ResDec - JOI ERROR:', err)
   }
 
   const response = res.result ? {
+    status: '',
     statusCode: res.statusCode,
     success: (typeof res.result != 'string'),
     result: res.result,
@@ -32,15 +41,19 @@ module.exports = (err, req, res, next) => {
     body: err.data || null
   }
 
-
-  if(typeof response.statusCode != "number") {
+  if(typeof response.statusCode != 'number') {
     response.status = response.statusCode
     response.statusCode = 500
-    console.log(' ------- Response Decorator - SERVER ERROR:', err)
-  }
+    console.log(' ------- ResDec - STRING STATUS CODE:', err)
+  } else delete response.status
 
-  if(response.statusCode >= 300) console.log(' ------- Response Decorator - SERVER ERROR:', err)
+  if(response.statusCode >= 500) console.log(' ------- ResDec - SERVER ERROR:', err)
+
+  // Remove request info if not in Development Mode
+  if(config.env.NODE_ENV !== 'development') delete response.request
 
   res.status(response.statusCode).json(response)
   next()
 }
+
+module.exports = decorator

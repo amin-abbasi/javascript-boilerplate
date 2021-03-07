@@ -1,16 +1,65 @@
-const app = require('./app')
-const env = app.config.env
+// Your Express Server Configuration Here
+require('reflect-metadata')
+const fs     = require('fs')
+const path   = require('path')
+const http   = require('http')
+const https  = require('https')
+const app    = require('./app')
+const config = require('./configs')
 
-// Listen on the designated port found in the .env [use 'server' instead of 'app' if you have socket.io]
-app.listen(env.SERVER_PORT || 4000, err => {
-  if (err) {
-    console.info('SERVER ERROR: ', colors.red(err));
-    throw new Error(`SERVER ERROR: ${colors.red(err)}`)
+const { NODE_ENV, SERVER_PROTOCOL, SERVER_HOST, SERVER_PORT, DB_TYPE } = config.env
+
+// ------ Require Database (mongodb OR mysql)
+const mongoConnect = require('./services/db-mongo')
+const mysqlConnect = require('./services/db-mysql')
+
+// TODO: Avoids DEPTH_ZERO_SELF_SIGNED_CERT error for self-signed certs
+// process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
+
+function setExpressServer(app) {
+  let expressServer
+  if (SERVER_PROTOCOL === 'http') expressServer = http.createServer(app)
+  else {
+    const keyPath = path.join(__dirname, '../sslCert/server.key')
+    const crtPath = path.join(__dirname, '../sslCert/server.crt')
+    const checkPath = fs.existsSync(keyPath) && fs.existsSync(crtPath)
+    if (!checkPath) {
+      console.error('No SSL Certificate found to run HTTPS Server!!')
+      process.exit(1)
+    }
+    const privateKey = fs.readFileSync(keyPath, 'utf8')
+    const certificate = fs.readFileSync(crtPath, 'utf8')
+    const credentials = {
+      key: privateKey,
+      cert: certificate
+    }
+    expressServer = https.createServer(credentials, app)
   }
+  return expressServer
+}
 
-  // output the status of the app in the terminal
-  const url = `${env.SERVER_PROTOCOL || 'http'}://${env.SERVER_HOST || 'localhost'}:${env.SERVER_PORT || 4000}`
-  console.info(`API is now running on ${url} in ${env.NODE_ENV || 'development'} mode`)
-})
 
-module.exports = app
+// ---------------- Add Socket.io ----------------
+// const socket = require('socket.io')
+// const io: socket.Server = socket(expressServer)
+// app.set('io', io)
+
+// ---------------- Start Server ----------------
+const startServer = async (expressServer) => {
+  const url = `${SERVER_PROTOCOL || 'http'}://${SERVER_HOST || 'localhost'}:${SERVER_PORT || 4000}`
+  const serverMessage = `API is now running on ${url} in ${NODE_ENV || 'development'} mode`
+  expressServer.listen(SERVER_PORT, () => { console.info(serverMessage) })
+  return serverMessage
+}
+
+(async () => {
+  try {
+    if(DB_TYPE === 'mongodb') await mongoConnect()
+    else await mysqlConnect()
+
+    const expressServer = setExpressServer(app)
+    await startServer(expressServer)
+  } catch (error) {
+    throw Error(`>>>>> Server Connection Error: ${error}`)
+  }
+})()

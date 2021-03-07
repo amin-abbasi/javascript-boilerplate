@@ -1,177 +1,186 @@
-const https  = require('https')
-const http   = require('http')
-// const Jwt    = require('jsonwebtoken')
-// const moment = require('moment')
+const { promisify } = require('util')
+const fetch  = require('node-fetch')
+const Jwt    = require('jsonwebtoken')
+const Boom   = require('@hapi/boom')
+const config = require('../configs')
+const redis  = require('./redis')
 
-module.exports = (config) => {
-
-  /**
-   * Find Property
-   * @param   {[Object]}  properties  array of properties object
-   * @param   {String}    label       label to be find in properties
-   * @return  {Object}                returns object of property and return `-1` if not found any
-   */
-  function findProp(properties, label) {
-    for (let index = 0; index < properties.length; index++) {
-      if(properties[index].label == label) return properties[index]
-    }
-    return -1
-  }
-
-  /**
-   * Check if an object is JSON
-   * @param   {Object}   object  an object to be checked
-   * @return  {Boolean}  return `true` if object is JSON, and return `false` if it isn't
-   */
-  function isJSON(object) {
-    if (typeof object != 'string') object = JSON.stringify(object)
-    try {
-      JSON.parse(object)
-      return true
-    }
-    catch (e) { return false }
-  }
-
-  /**
-   * Set Unique Array Function
-   * @param array array of string to be checked
-   */
-  function setUniqueArray(array) {
-    return array.filter((value, index, self) => self.indexOf(value) === index)
-  }
-
-  /**
-   * Simple object check.
-   * @param item
-   * @returns {boolean}
-   */
-  function isObject(item) {
-    return (item && typeof item === 'object' && !Array.isArray(item))
-  }
-
-  /**
-   * Deep merge two objects.
-   * @param target
-   * @param ...sources
-   */
-  function mergeDeep(target, ...sources) {
-    if (!sources.length) return target
-    const source = sources.shift()
-
-    if (isObject(target) && isObject(source)) {
-      for (const key in source) {
-        if (isObject(source[key])) {
-          if (!target[key]) Object.assign(target, { [key]: {} })
-          mergeDeep(target[key], source[key])
-        } else {
-          Object.assign(target, { [key]: source[key] })
-        }
-      }
-    }
-    return mergeDeep(target, ...sources)
-  }
-
-  // JWT Token Functions
-  const jwt = {
-    // Creates JWT Token
-    create (data, expire = config.jwt.expiration) {
-      return Jwt.sign(data, config.jwt.key, { expiresIn: expire, algorithm: config.jwt.algorithm })
-    },
-
-    // Creates Non Expire JWT Token (Caching is temporarily disabled)
-    createNonExpire (data) {
-      // let redis = plugins['hapi-redis'].client
-      let token = Jwt.sign(data, config.jwt.key, { algorithm: config.jwt.algorithm })
-      // let key = `${config.jwt.cache_prefix}${token}`
-      // redis.set(key, 'valid')
-      return token
-    },
-
-    // FIXME: Blocks JWT Token from cache
-    block (token) {
-      // let decoded = Jwt.decode(token, config.jwt.key)
-      // let redis = plugins['hapi-redis'].client
-      // let key = `${config.jwt.cache_prefix}${token}`
-      // if(!(decoded.exp == null || decoded.exp == undefined )) {
-      //   let expiration = decoded.exp - moment().unix()
-      //   redis.multi().set(key, "blocked").expire(key, expiration).exec()
-      // }
-      // else {
-      //   redis.del(key)
-      // }
-    },
-
-    // Renew JWT Token when is going to be expired
-    renew (token, routePlugins, expire) {
-      if(!token) throw new Error('Token is undefined')
-      if((!config.jwt.allow_renew && routePlugins.jwtRenew == undefined) || (routePlugins.jwtRenew == false))
-        throw new Error('Renewing tokens is not allowed')
-      let decoded = Jwt.decode(token, config.jwt.key)
-      if(decoded.exp == null || decoded.exp == undefined) return token
-
-      // TODO: Check moment().unix() vs. Date.now()
-      // if( (decoded.exp - moment().unix()) > config.jwt.renew_threshold ) return token
-      if( (decoded.exp - Date.now()) > config.jwt.renew_threshold ) return token
-
-      // this.block(token, decoded)
-      delete decoded.iat
-      delete decoded.exp
-      return this.create(decoded, expire || config.jwt.expiration)
-    },
-
-    // Checks the validity of JWT Token
-    isValid (token) {
-      // return new Promise((resolve, reject) => {
-      //   let redis = plugins['hapi-redis'].client
-      //   let key = `${config.jwt.cache_prefix}${token}`
-      //   redis.get(key, (err, value) => {
-      //     if(err) return reject(Error('Can not validate because cache app is not responsive'))
-      //     let decoded = Jwt.decode(token, config.jwt.key)
-      //     if(!(decoded.exp == null || decoded.exp == undefined)) {
-      //       if(value === null) return resolve(true)
-      //       resolve(false)
-      //     }
-      //     else {
-      //       if(value === null) return resolve(false)
-      //       resolve(true)
-      //     }
-      //   })
-      // })
-    }
-  }
-
-  /**
-   * Request Function
-   * @param   {Object}   opt       an object for request options
-   * @param   {String}   protocol  request protocol `http` or `https`
-   * @param   {String}   format    request format response `json` or others
-   * @param   {Object}   bodyData  an object for request post or put body data
-   * @return  {Object}   returns request response
-   */
-  function request(opt, protocol, format, bodyData) {
-
-    if(bodyData && opt.headers)
-      if(!opt.headers['Content-Length']) {
-        bodyData = JSON.stringify(bodyData)
-        opt.headers['Content-Length'] = Buffer.byteLength(bodyData)
-      }
-
-    const Protocol = (protocol === 'https') ? https : http
-    return new Promise((resolve, reject) => {
-      const request = Protocol.request(opt, (response) => {
-        response.setEncoding('utf8')
-        let body = ''
-        response.on('data', (chunk) => { body += chunk })
-        response.on('end', () => {
-          const result = isJSON(body) ? JSON.parse(body) : body
-          resolve(result)
-        })
-      })
-      request.on('error', (e) => { console.log(`CONNECTION ERROR FOR: ${JSON.stringify(opt)}\nERROR: `, e);  reject(e) })
-      if(bodyData) request.write(bodyData)
-      request.end()
-    })
-  }
-
-  return { request, jwt, findProp, isJSON }
+/**
+ * Check if an object is JSON
+ * @param   object  an object to be parsed to JSON
+ * @return  return valid object if it is JSON, and return `null` if it isn't
+ */
+function tryJSON(object) {
+  try { return JSON.parse(object) }
+  catch (e) { return null }
 }
+
+// JWT Token Functions
+const jwt = {
+  // Creates JWT Token
+  create(data, expire = config.jwt.expiration) {
+    const secretKey = config.jwt.key
+    const options = {
+      expiresIn: expire,
+      algorithm: config.jwt.algorithm
+    }
+    const token = Jwt.sign(data, secretKey, options)
+    const key = `${config.jwt.cache_prefix}${token}`
+    redis.set(key, 'valid')
+    return token
+  },
+
+  // Creates Non Expire JWT Token (Caching is temporarily disabled)
+  createNonExpire(data) {
+    const token = Jwt.sign(data, config.jwt.key, {
+      algorithm: config.jwt.algorithm
+    })
+    const key = `${config.jwt.cache_prefix}${token}`
+    redis.set(key, 'valid')
+    return token
+  },
+
+  // Decode Given Token from Request Headers ['authorization]
+  decode(token) {
+    return Jwt.decode(token)
+  },
+
+  // Blocks JWT Token from cache
+  block(token) {
+    if (!token) throw new Error('Token is undefined.')
+    const decoded = Jwt.decode(token)
+    const key = `${config.jwt.cache_prefix}${token}`
+    if (decoded.exp) {
+      const expiration = decoded.exp - Date.now()
+      redis.multi().set(key, 'blocked').expire(key, expiration).exec()
+    } else {
+      redis.del(key)
+    }
+  },
+
+  // Renew JWT Token when is going to be expired
+  renew(token, expire) {
+    if (!token) throw new Error('Token is undefined.')
+    if (!config.jwt.allow_renew) throw new Error('Renewing tokens is not allowed.')
+
+    const now = new Date().getTime()
+    const decoded = Jwt.decode(token)
+    if (!decoded.exp) return token
+    if (decoded.exp - now > config.jwt.renew_threshold) return token
+
+    this.block(token)
+    if (decoded.iat) delete decoded.iat
+    if (decoded.exp) delete decoded.exp
+    return this.create(decoded, expire || config.jwt.expiration)
+  },
+
+  // Checks the validity of JWT Token
+  async isValid(token) {
+    try {
+      const key = `${config.jwt.cache_prefix}${token}`
+      const asyncRedisGet = promisify(redis.get).bind(redis)
+      const value = await asyncRedisGet(key)
+      const decoded = Jwt.decode(token)
+
+      if (decoded.exp) { // expire token
+
+        if (decoded.exp >= new Date().getTime()) { // token is not expired yet
+          if (value === 'valid') return decoded    // token is not revoked
+          else return false   // token is revoked
+        } else return false   // token is expired
+
+      } else return decoded   // a non-expire token [no exp in object]
+
+    } catch (err) {
+      console.log(' >>> JWT Token isValid error: ', err)
+      throw Boom.unauthorized('Invalid Token')
+    }
+  }
+}
+
+/**
+ * Set Unique Array Function
+ * @param array array of string to be checked
+ */
+function setUniqueArray(array) {
+  return array.filter((value, index, self) => self.indexOf(value) === index)
+}
+
+/**
+ * Simple object check.
+ * @param item
+ * @returns {boolean}
+ */
+function isObject(item) {
+  return (item && typeof item === 'object' && !Array.isArray(item))
+}
+
+/**
+ * Deep merge two objects.
+ * @param target
+ * @param ...sources
+ */
+function mergeDeep(target, ...sources) {
+  if (!sources.length) return target
+  const source = sources.shift()
+
+  if (isObject(target) && isObject(source)) {
+    for (const key in source) {
+      if (isObject(source[key])) {
+        if (!target[key]) Object.assign(target, { [key]: {} })
+        mergeDeep(target[key], source[key])
+      } else {
+        Object.assign(target, { [key]: source[key] })
+      }
+    }
+  }
+  return mergeDeep(target, ...sources)
+}
+
+/**
+ * Generate an access token
+ * @param    {string}     userId        User Id
+ * @param    {string}     role          User Role
+ * @param    {string}     email         User Email
+ * @param    {string}     mobile        User Mobile
+ * @param    {boolean}    rememberMe    if `true` it will generate non-expire token
+ * @return   {string}     returns authorization token for header
+ */
+function setToken(userId, role, rememberMe, email, mobile) {
+  const jwtObject = {
+    id: userId,
+    email: email,
+    mobile: mobile,
+    role: role,
+    iat: new Date().getTime()
+  }
+  const accessToken = rememberMe ? jwt.createNonExpire(jwtObject) : jwt.create(jwtObject)
+  return `Bearer ${accessToken}`
+}
+
+/**
+ * MS-Sample function to do something
+ * @param    {string}    sampleId    Sample ID
+ * @return   {Promise<IResponse>}    returns response
+ */
+async function doSomething(sampleId) {
+  try {
+    const { url, paths } = config.MS.some_microservice
+    const URL = `${url}${paths.doSomething}`
+    const opt = {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ sampleId })
+    }
+    const result = await fetch(URL, opt)
+    const response = await result.json()
+    console.log(' ---- MS-Sample Result: ', response)
+    if(!result.ok) throw response
+    return { success: true, result: response }
+  } catch (err) {
+    console.log(' ---- MS-Sample Error: ', err)
+    return { success: false, error: err }
+  }
+}
+
+module.exports = { tryJSON, jwt, setUniqueArray, mergeDeep, setToken, doSomething }

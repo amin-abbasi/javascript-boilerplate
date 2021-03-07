@@ -1,135 +1,130 @@
 const mongoose = require('mongoose')
 const Boom     = require('@hapi/boom')
-// const uniqueV  = require('mongoose-unique-validator')
+const uniqueV  = require('mongoose-unique-validator')
+const { mergeDeep } = require('../services/methods')
 
-module.exports = (app) => {
+const Schema = mongoose.Schema
 
-  const Schema   = mongoose.Schema
-  const ObjectId = Schema.Types.ObjectId
+// Add your own attributes in schema
+const schema = new Schema({
+  name:  { type: Schema.Types.String, required: true },
+  email: { type: Schema.Types.String, required: true, unique: true },
+  any: Schema.Types.Mixed,    // An "anything goes" SchemaType
 
-  // Add your own attributes in schema
-  const schema = new Schema({
-    // name: { type: String, required: true, unique: true },
-    any: Schema.Types.Mixed,    // An "anything goes" SchemaType
-
-    // Advanced Property type schema
-    location: {
-      type: {
-        _id: false,
-        address: { type: Schema.Types.String },
-        coordinate: {
-          type: {
-            _id: false,
-            lat: Schema.Types.Number,
-            lon: Schema.Types.Number
-          }
+  // Advanced Property type schema
+  location: {
+    type: {
+      _id: false,
+      country: { type: Schema.Types.String, required: true },
+      city:    { type: Schema.Types.String, required: true },
+      address: { type: Schema.Types.String },
+      coordinate: {
+        type: {
+          _id: false,
+          lat: Schema.Types.Number,
+          lon: Schema.Types.Number
         }
-      },
-      required: true
+      }
     },
-
-    createdAt: { type: Schema.Types.Number },
-    updatedAt: { type: Schema.Types.Number },
-    deletedAt: { type: Schema.Types.Number, default: null },
-
-    // , ... other properties ...
+    required: true
   },
-  {
-    strict: false,  // To allow database in order to save Mixed type data in DB
-    // timestamps: { createdAt: 'createdAt', updatedAt: 'updatedAt' }
-  })
 
-  // Apply the Unique Property Validator plugin to schema.
-  // schema.plugin(uniqueV, { message: 'Error, expected "{PATH}" to be unique.' })
+  createdAt: { type: Schema.Types.Number },
+  updatedAt: { type: Schema.Types.Number },
+  deletedAt: { type: Schema.Types.Number, default: 0 },
+})
 
-  // ------------------------------------- Set Hooks (like: 'pre') for Schema -------------------------------------
+// Apply the Unique Property Validator plugin to schema.
 
-  // schema.pre('save', function(next) {
-  //   ... Code Here ...
-  //   next()
-  // })
+schema.plugin(uniqueV, {
+  type: 'mongoose-unique-validator',
+  message: 'Error, expected {PATH} to be unique.'
+})
 
-  // Flatten model to update (patch) partial data
-  // schema.pre('findOneAndUpdate', function() {
-  //   this._update = flat(this._update)
-  // })
+// Choose your own model name
+const ModelName = mongoose.model('ModelName', schema)
 
-
-  // Choose your own model name
-  const modelName = (mongoose.models && mongoose.models.ModelName) ? mongoose.models.ModelName : mongoose.model('ModelName', schema)
-
-  return class ModelName extends modelName {
-
-    // Options i.e.: { checkKeys: false }
-    static create(data, options) {
-      const modelName = new ModelName({ ...data, createdAt: new Date().getTime() })
-      return options ? modelName.save(options) : modelName.save()
-    }
-
-    static details(modelNameId) {
-      return ModelName.findById(modelNameId)
-        .then(modelName => {
-          if(!modelName || modelName._doc.deletedAt) throw Boom.notFound('ModelName not found.')
-          return modelName._doc
-        })
-    }
-
-    static list(query) {
-      if(!query) query = {}
-      query.deletedAt = null
-      return ModelName.find(query)
-        .then(result => {
-          return {
-            total: result.length,
-            list: result
-          }
-        })
-    }
-
-    static update(query, data) {
-      return ModelName.findOneAndUpdate(query, { ...data, updatedAt: new Date().getTime() }, { new: true })
-    }
-
-    static updateById (modelNameId, data) {
-      return this.details(modelNameId)
-        .then((modelName) => {
-          _.merge(modelName, data)
-          modelName.updatedAt = new Date().getTime()
-          return ModelName.findByIdAndUpdate(modelNameId, modelName, { new: true })
-        })
-    }
-
-    static remove(modelNameId) {
-      return this.details(modelNameId)
-        .then(() => {
-          return ModelName.findByIdAndUpdate(modelNameId, { deletedAt: new Date().getTime() }, { new: true })
-        })
-    }
-
-    static restore(modelNameId) {
-      return this.details(modelNameId)
-        .then(() => {
-          return ModelName.findByIdAndUpdate(modelNameId, { deletedAt: null }, { new: true })
-        })
-    }
+async function add(data) {
+  const modelNameData = {
+    ...data,
+    createdAt: new Date().getTime()
   }
-
+  return await ModelName.create(modelNameData)
 }
 
+async function list(queryData) {
+  const { page, size, ...query } = queryData
+
+  // if(query.dateRange) {
+  //   query.createdAt = {}
+  //   if(query.dateRange.from) query.createdAt['$gte'] = query.dateRange.from
+  //   if(query.dateRange.to)   query.createdAt['$lte'] = query.dateRange.to
+  //   delete query.dateRange
+  // }
+  // if(query.name) query.name = { '$regex': query.name, '$options': 'i' }
+
+  const total = await ModelName.countDocuments({ deletedAt: 0 })
+  const result = await ModelName.find(query).limit(size).skip((page - 1) * size)
+  return {
+    total: total,
+    list: result
+  }
+}
+
+async function details(modelNameId) {
+  const modelName = await ModelName.findById(modelNameId)
+  if(!modelName || modelName.deletedAt !== 0) throw Boom.notFound('ModelName not found.')
+  return modelName
+}
+
+async function updateByQuery(query, data) {
+  const updatedData = { ...data, updatedAt: new Date().getTime() }
+  return await ModelName.findOneAndUpdate(query, updatedData, { new: true })
+}
+
+async function updateById(modelNameId, data) {
+  const modelName = await details(modelNameId)
+  modelName.updatedAt = new Date().getTime()
+  const updatedModelName = mergeDeep(modelName, data)
+  return await ModelName.findByIdAndUpdate(modelNameId, updatedModelName, { new: true })
+}
+
+async function softDelete(modelNameId) {
+  const modelName = await details(modelNameId)
+  return await ModelName.findByIdAndUpdate(modelName.id, { deletedAt: new Date().getTime() }, { new: true })
+}
+
+async function remove(modelNameId) {
+  const modelName = await details(modelNameId)
+  return await ModelName.deleteOne({ _id: modelName.id })
+}
+
+async function restore(modelNameId) {
+  const modelName = await details(modelNameId)
+  return await ModelName.findByIdAndUpdate(modelName.id, { deletedAt: 0 }, { new: true })
+}
+
+module.exports = { add, list, details, updateById, updateByQuery, softDelete, remove, restore }
+
 // --------------- Swagger Models Definition ---------------
-/**
- * @typedef Sample
- * @property {string} userId.required - User ID
- * @property {string} name.required - Sample Name
- * @property {string} description.required - Some description for sample
- * @property {integer} age - Some description for age - eg: 32
- * @property {Array.<Client>} clients.required - List of clients participating in this sample
- */
 
 /**
- * @typedef Client
- * @property {integer} name.required - Client name - eg: Moshanir Co.
- * @property {integer} logoUrl - Client logo Url link
- * @property {string} color
- * @property {enum} status - Status values that need to be considered for filter - eg: available,pending
+ * @swagger
+ *  components:
+ *    schemas:
+ *      Sample:
+ *        type: object
+ *        required:
+ *          - name
+ *          - email
+ *        properties:
+ *          name:
+ *            type: string
+ *          email:
+ *            type: string
+ *            format: email
+ *            description: Email for the user, needs to be unique.
+ *        example:
+ *          name: 'Amin'
+ *          email: 'amin@gmail.com'
  */

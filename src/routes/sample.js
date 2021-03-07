@@ -1,51 +1,291 @@
 const express = require('express')
-const router  = express.Router()
+const router = express.Router()
 
 // Add Controllers & Validators
 const Controller = require('../controllers/sample')
 const Validator  = require('../validators/sample')
+const { checkToken, checkRole } = require('../services/check_auth')
 
-// ---------------------------------- Define all routes in this microservice ----------------------------------
 
+// (action)             (verb)    (URI)
+// create:              POST      - /samples
+// list:                GET       - /samples
+// details:             GET       - /samples/:sampleId
+// update:              PUT       - /samples/:sampleId
+// delete:              DELETE    - /samples/:sampleId
+// do something else:   POST      - /samples/:sampleId/someOtherActionType
+
+
+// ---------------------------------- Define All Sample Routes Here ----------------------------------
 
 /**
- * This function comment is parsed by doctrine
- * test test test test test test test test
- * @route POST /users
- * @param {Client.model} clients.body.required - the new clients
- * @group Sample - Operations about user
- * @param {string} email.query.required - username or email
- * @param {string} password.query.required - user's password.
- * @param {enum} status.query.required - Status values that need to be considered for filter - eg: available,pending
- * @operationId retrieveFooInfo
- * @produces application/json application/xml
- * @consumes application/json application/xml
- * @returns {Response.model} 200 - An array of user info
- * @returns {Product.model}  default - Unexpected error
- * @returns {Array.<Client>} Client - Some description for clients
- * @headers {integer} 200.X-Rate-Limit - calls per hour allowed by the user
- * @headers {string} 200.X-Expires-After - 	date in UTC when token expires
- * @security JWT
+ * @swagger
+ * tags:
+ *   name: Samples
+ *   description: Sample management
+ */
+
+/**
+ * @swagger
+ * path:
+ *  /samples/:
+ *    post:
+ *      summary: Create a new sample
+ *      tags: [Samples]
+ *      requestBody:
+ *        required: true
+ *        content:
+ *          application/json:
+ *            schema:
+ *              $ref: '#/components/schemas/Sample'
+ *      responses:
+ *        "200":
+ *          description: A sample schema
+ *          content:
+ *            application/json:
+ *              schema:
+ *                type: object
+ *                properties:
+ *                  success:
+ *                    type: boolean
+ *                    description: Response Status
+ *                  result:
+ *                    $ref: '#/components/schemas/Sample'
+ *        "400":
+ *          description: Bad request schema
+ *          content:
+ *            application/json:
+ *              schema:
+ *                type: object
+ *                properties:
+ *                  statusCode:
+ *                    type: integer
+ *                  message:
+ *                    type: string
+ *                  body:
+ *                    type: object
  */
 router.route('').post(Validator.create, Controller.create)
 
-
 /**
- * This function comment is parsed by doctrine
- * @route GET /api
- * @group Sample - Operations about user
- * @param {Client.model} clients.body.required - the new clients
- * @param {string} email.query.required - username or email - eg: user@domain.com
- * @param {string} password.query.required - user's password.
- * @returns {object} 200 - An array of user info
- * @returns {Error}  default - Unexpected error
+ * @swagger
+ * path:
+ *  /samples/:
+ *    get:
+ *      summary: Get list of all Samples
+ *      tags: [Samples]
+ *      responses:
+ *        "200":
+ *          description: Gets a list of samples as an array of objects
+ *          content:
+ *            application/json:
+ *              schema:
+ *                type: object
+ *                properties:
+ *                  success:
+ *                    type: boolean
+ *                    description: Response Status
+ *                  result:
+ *                    type: array
+ *                    items:
+ *                      type: object
+ *                      properties:
+ *                        total:
+ *                          type: integer
+ *                        list:
+ *                          $ref: '#/components/schemas/Sample'
+ *        "400":
+ *          description: Bad request schema
+ *          content:
+ *            application/json:
+ *              schema:
+ *                type: object
+ *                properties:
+ *                  statusCode:
+ *                    type: integer
+ *                  message:
+ *                    type: string
+ *                  body:
+ *                    type: object
  */
 router.route('').get(Validator.list, Controller.list)
 
+/**
+ * @swagger
+ * path:
+ *  /samples/{sampleId}:
+ *    get:
+ *      summary: Sample Details
+ *      tags: [Samples]
+ *      parameters:
+ *        - name: sampleId
+ *          in: path
+ *          description: Sample ID
+ *          required: true
+ *          schema:
+ *            type: string
+ *      responses:
+ *        "200":
+ *          description: Gets a sample's details
+ *          content:
+ *            application/json:
+ *              schema:
+ *                type: object
+ *                properties:
+ *                  success:
+ *                    type: boolean
+ *                    description: Response Status
+ *                  result:
+ *                    $ref: '#/components/schemas/Sample'
+ *        "400":
+ *          description: Bad request schema
+ *          content:
+ *            application/json:
+ *              schema:
+ *                type: object
+ *                properties:
+ *                  statusCode:
+ *                    type: integer
+ *                  message:
+ *                    type: string
+ *                  body:
+ *                    type: object
+ */
 router.route('/:sampleId').get(Validator.details, Controller.details)
+
+/**
+ * @swagger
+ * path:
+ *  /samples/{sampleId}:
+ *    put:
+ *      summary: Sample Update
+ *      tags: [Samples]
+ *      parameters:
+ *        - name: sampleId
+ *          in: path
+ *          description: Sample ID
+ *          required: true
+ *          schema:
+ *            type: string
+ *      responses:
+ *        "200":
+ *          description: Admin can update a sample
+ *          content:
+ *            application/json:
+ *              schema:
+ *                type: object
+ *                properties:
+ *                  success:
+ *                    type: boolean
+ *                    description: Response Status
+ *                  result:
+ *                    $ref: '#/components/schemas/Sample'
+ *        "400":
+ *          description: Bad request schema
+ *          content:
+ *            application/json:
+ *              schema:
+ *                type: object
+ *                properties:
+ *                  statusCode:
+ *                    type: integer
+ *                  message:
+ *                    type: string
+ *                  body:
+ *                    type: object
+ */
 router.route('/:sampleId').put(Validator.update, Controller.update)
 // router.route('/:sampleId').patch(Validator.update, Controller.update)
+
+/**
+ * @swagger
+ * path:
+ *  /samples/{sampleId}:
+ *    delete:
+ *      summary: Delete Sample
+ *      tags: [Samples]
+ *      parameters:
+ *        - name: sampleId
+ *          in: path
+ *          description: Sample ID
+ *          required: true
+ *          schema:
+ *            type: string
+ *      responses:
+ *        "200":
+ *          description: Admin can delete a sample [soft delete]
+ *          content:
+ *            application/json:
+ *              schema:
+ *                type: object
+ *                properties:
+ *                  success:
+ *                    type: boolean
+ *                    description: Response Status
+ *                  result:
+ *                    $ref: '#/components/schemas/Sample'
+ *        "400":
+ *          description: Bad request schema
+ *          content:
+ *            application/json:
+ *              schema:
+ *                type: object
+ *                properties:
+ *                  statusCode:
+ *                    type: integer
+ *                  message:
+ *                    type: string
+ *                  body:
+ *                    type: object
+ */
 router.route('/:sampleId').delete(Validator.delete, Controller.delete)
 
+/**
+ * @swagger
+ * path:
+ *  /samples/{sampleId}/secureAction:
+ *    post:
+ *      summary: Secure Action For Sample
+ *      tags: [Samples]
+ *      parameters:
+ *        - name: sampleId
+ *          in: path
+ *          description: Sample ID
+ *          required: true
+ *          schema:
+ *            type: string
+ *      responses:
+ *        "200":
+ *          description: Secure Action For Sample
+ *          content:
+ *            application/json:
+ *              schema:
+ *                type: object
+ *                properties:
+ *                  success:
+ *                    type: boolean
+ *                    description: Response Status
+ *                  result:
+ *                    $ref: '#/components/schemas/Sample'
+ *        "400":
+ *          description: Bad request schema
+ *          content:
+ *            application/json:
+ *              schema:
+ *                type: object
+ *                properties:
+ *                  statusCode:
+ *                    type: integer
+ *                  message:
+ *                    type: string
+ *                  body:
+ *                    type: object
+ */
+router.route('/:sampleId/secureAction').post(
+  checkToken,
+  checkRole,
+  Validator.secureAction,
+  Controller.secureAction
+)
 
 module.exports = router
