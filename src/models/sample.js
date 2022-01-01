@@ -42,14 +42,14 @@ schema.plugin(uniqueV, {
 })
 
 // Choose your own model name
-const ModelName = mongoose.model('ModelName', schema)
+const Model = mongoose.model('Model_Name', schema)
 
 async function add(data) {
-  const modelNameData = {
+  const modelData = {
     ...data,
-    createdAt: new Date().getTime()
+    createdAt: Date.now()
   }
-  return await ModelName.create(modelNameData)
+  return await Model.create(modelData)
 }
 
 async function list(queryData) {
@@ -63,45 +63,45 @@ async function list(queryData) {
   // }
   // if(query.name) query.name = { '$regex': query.name, '$options': 'i' }
 
-  const total = await ModelName.countDocuments({ deletedAt: 0 })
-  const result = await ModelName.find(query).limit(size).skip((page - 1) * size)
+  const total = await Model.countDocuments({ deletedAt: 0 })
+  const result = await Model.find(query).limit(size).skip((page - 1) * size)
   return {
     total: total,
     list: result
   }
 }
 
-async function details(modelNameId) {
-  const modelName = await ModelName.findById(modelNameId)
-  if(!modelName || modelName.deletedAt !== 0) throw Boom.notFound('ModelName not found.')
-  return modelName
+async function details(modelId) {
+  const model = await Model.findById(modelId)
+  if(!model || model.deletedAt !== 0) throw Boom.notFound('Model not found.')
+  return model
 }
 
 async function updateByQuery(query, data) {
-  const updatedData = { ...data, updatedAt: new Date().getTime() }
-  return await ModelName.findOneAndUpdate(query, updatedData, { new: true })
+  const updatedData = { ...data, updatedAt: Date.now() }
+  return await Model.findOneAndUpdate(query, updatedData, { new: true })
 }
 
-async function updateById(modelNameId, data) {
-  const modelName = await details(modelNameId)
-  modelName.updatedAt = new Date().getTime()
-  const updatedModelName = mergeDeep(modelName, data)
-  return await ModelName.findByIdAndUpdate(modelNameId, updatedModelName, { new: true })
+async function updateById(modelId, data) {
+  const model = await details(modelId)
+  model.updatedAt = Date.now()
+  const updatedModel = mergeDeep(model, data)
+  return await Model.findByIdAndUpdate(modelId, updatedModel, { new: true })
 }
 
-async function softDelete(modelNameId) {
-  const modelName = await details(modelNameId)
-  return await ModelName.findByIdAndUpdate(modelName.id, { deletedAt: new Date().getTime() }, { new: true })
+async function softDelete(modelId) {
+  const model = await details(modelId)
+  return await Model.findByIdAndUpdate(model.id, { deletedAt: Date.now() }, { new: true })
 }
 
-async function remove(modelNameId) {
-  const modelName = await details(modelNameId)
-  return await ModelName.deleteOne({ _id: modelName.id })
+async function remove(modelId) {
+  const model = await details(modelId)
+  return await Model.deleteOne({ _id: model.id })
 }
 
-async function restore(modelNameId) {
-  const modelName = await details(modelNameId)
-  return await ModelName.findByIdAndUpdate(modelName.id, { deletedAt: 0 }, { new: true })
+async function restore(modelId) {
+  const model = await details(modelId)
+  return await Model.findByIdAndUpdate(model.id, { deletedAt: 0 }, { new: true })
 }
 
 module.exports = { add, list, details, updateById, updateByQuery, softDelete, remove, restore }
