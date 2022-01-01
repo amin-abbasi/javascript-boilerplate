@@ -27,7 +27,7 @@ app.set('config', config)
 // app.set('io', io)
 
 // ------ Allows cross-origin domains to access this API
-// const initCors = require('./services/cors')
+// const initCors = require('./middlewares/cors')
 // app.use(initCors)
 
 // ------ Add Redis to system globally [Caching System]
@@ -43,7 +43,7 @@ app.set('config', config)
 // app.set('methods', methods)
 
 // ------ Add logger to system
-const logger = require('./services/logger')
+const logger = require('./middlewares/logger')
 app.use(logger)
 
 // ------ Require all routes
@@ -51,7 +51,7 @@ const router = require('./routes')
 app.use('/api', router)
 
 // ------ Add Response Decorator (& error handler) to system
-const decorator = require('./services/response_decorator')
+const decorator = require('./middlewares/decorator')
 app.use(decorator)
 
 module.exports = app

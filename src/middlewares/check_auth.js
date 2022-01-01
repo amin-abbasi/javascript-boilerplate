@@ -1,5 +1,5 @@
 const Boom    = require('@hapi/boom')
-const { jwt } = require('./methods')
+const { jwt } = require('../services/methods')
 const config  = require('../configs')
 
 // Function to set needed header auth

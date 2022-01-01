@@ -4,7 +4,7 @@ const router = express.Router()
 // Add Controllers & Validators
 const Controller = require('../controllers/sample')
 const Validator  = require('../validators/sample')
-const { checkToken, checkRole } = require('../services/check_auth')
+const { checkToken, checkRole } = require('../middlewares/check_auth')
 
 
 // (action)             (verb)    (URI)
