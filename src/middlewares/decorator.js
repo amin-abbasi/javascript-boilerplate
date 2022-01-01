@@ -4,7 +4,7 @@ const config = require('../configs')
 function decorator(err, req, res, next) {
 
   // mongoose-unique-validator error
-  if(err._message.includes('validation failed')) {
+  if(err._message?.includes('validation failed')) {
     err.statusCode = 400
     err.message = err._message
     err.data = JSON.parse(JSON.stringify(err.errors))
