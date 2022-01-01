@@ -1,13 +1,13 @@
-const Boom    = require('@hapi/boom')
-const { jwt } = require('../services/methods')
-const config  = require('../configs')
+const Boom   = require('@hapi/boom')
+const Jwt    = require('../services/jwt')
+const config = require('../configs')
 
 // Function to set needed header auth
 async function checkToken(req, _res, next) {
   try {
     const authToken = req.headers.authorization.split(' ')[1]
     if (!authToken || authToken === '') throw Boom.unauthorized('Invalid Token.')
-    const user = await jwt.isValid(authToken)
+    const user = await Jwt.isValid(authToken)
     if (!user) throw Boom.unauthorized('Invalid Token.')
     req.user = user
     next()
