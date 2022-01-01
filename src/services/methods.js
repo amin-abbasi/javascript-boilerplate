@@ -62,9 +62,9 @@ function mergeDeep(target, ...sources) {
 function setToken(userId, role, rememberMe, email, mobile) {
   const jwtObject = {
     id: userId,
-    email: email,
-    mobile: mobile,
-    role: role,
+    email,
+    mobile,
+    role,
     iat: new Date().getTime()
   }
   const accessToken = rememberMe ? jwt.createNonExpire(jwtObject) : jwt.create(jwtObject)
@@ -72,28 +72,37 @@ function setToken(userId, role, rememberMe, email, mobile) {
 }
 
 /**
- * MS-Sample function to do something
- * @param    {string}    sampleId    Sample ID
- * @return   {Promise<IResponse>}    returns response
+ * Simple Rest API function to do something from a 3rd party
+ * @param    {string}    method     API Method [Required] - `POST` | `GET` | `PUT` | `DELETE`
+ * @param    {string}    baseUrl    API Base URL [Required]
+ * @param    {string}    pathUrl    API Path URL [Optional]
+ * @param    {object}    headers    API Headers [Optional] - { [key: string]: string }
+ * @param    {object}    body       API Body [Optional] - { [key: string]: any }
+ * @param    {object}    query      API Query [Optional] - { [key: string]: string }
+ * @return   {Promise<object>}      returns response
  */
-async function doSomething(sampleId) {
+async function restAPI(method, baseUrl, pathUrl, headers, body, query) {
   try {
-    const { url, paths } = config.MS.some_microservice
-    const URL = `${url}${paths.doSomething}`
+    let URL = `${baseUrl}${pathUrl || ''}`
     const opt = {
-      method: 'POST',
+      method,
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ sampleId })
     }
-    const result = await fetch(URL, opt)
-    const response = await result.json()
-    console.log(' ---- MS-Sample Result: ', response)
-    if(!result.ok) throw response
-    return { success: true, result: response }
-  } catch (err) {
-    console.log(' ---- MS-Sample Error: ', err)
-    return { success: false, error: err }
+
+    if(method.toUpperCase() !== 'GET' && body) opt.body = JSON.stringify(body)
+    if(headers) opt.headers = { ...opt.headers, ...headers }
+    if(query) URL += ('?' + new URLSearchParams(query).toString())
+
+    const response = await fetch(URL, opt)
+    console.log('response: ', response)
+    const result = await response.json()
+    if(!response.ok) return { success: false, error: result }
+    return { success: true, result }
+
+  } catch (error) {
+    console.log(' ---- Rest API Error: ', error)
+    return { success: false, error }
   }
 }
 
-module.exports = { tryJSON, setUniqueArray, mergeDeep, setToken, doSomething }
+module.exports = { tryJSON, setUniqueArray, mergeDeep, setToken, restAPI }
