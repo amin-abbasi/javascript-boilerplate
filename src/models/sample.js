@@ -106,25 +106,25 @@ async function restore(modelNameId) {
 
 module.exports = { add, list, details, updateById, updateByQuery, softDelete, remove, restore }
 
-// --------------- Swagger Models Definition ---------------
+// --------------- OpenAPI Models Definition ---------------
 
 /**
- * @swagger
- *  components:
- *    schemas:
- *      Sample:
- *        type: object
- *        required:
- *          - name
- *          - email
- *        properties:
- *          name:
- *            type: string
- *          email:
- *            type: string
- *            format: email
- *            description: Email for the user, needs to be unique.
- *        example:
- *          name: 'Amin'
- *          email: 'amin@gmail.com'
+ * @openapi
+ * components:
+ *   schemas:
+ *     Sample:
+ *       type: object
+ *       required:
+ *         - name
+ *         - email
+ *       properties:
+ *         name:
+ *           type: string
+ *         email:
+ *           type: string
+ *           format: email
+ *           description: Email for the user, needs to be unique.
+ *       example:
+ *         name: 'Amin'
+ *         email: 'amin@gmail.com'
  */

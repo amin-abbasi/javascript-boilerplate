@@ -1,7 +1,7 @@
 // Open http://<app_host>:<app_port>/docs in your browser to view the documentation.
-const swagger   = require('swagger-jsdoc')
-const config    = require('../configs')
-const myPackage = require('../../package.json')
+const swagger = require('swagger-jsdoc')
+const config  = require('../configs')
+const package = require('../../package.json')
 
 const { SERVER_PROTOCOL, SERVER_HOST, SERVER_PORT } = config.env
 const url = `${SERVER_PROTOCOL}://${SERVER_HOST}:${SERVER_PORT}/api`
@@ -9,11 +9,11 @@ const url = `${SERVER_PROTOCOL}://${SERVER_HOST}:${SERVER_PORT}/api`
 const swaggerDefinition = {
   openapi: '3.0.0',
   info: {
-    title: myPackage.name,
-    version: myPackage.version,
-    description: myPackage.description,
-    license: { name: myPackage.license, url: 'http://aminaeon.ir/licenses' },
-    contact: { name: myPackage.author, email: 'amin4193@gmail.com' }
+    title: package.name,
+    version: package.version,
+    description: package.description,
+    license: { name: package.license, url: 'http://aminaeon.ir/licenses' },
+    contact: { name: package.author, email: 'amin4193@gmail.com' }
   },
   servers: [ { url: `${url}/v1` } ],
   // basePath: '/v1',
@@ -32,14 +32,9 @@ const swaggerDefinition = {
 }
 
 const options = {
-  swaggerDefinition: swaggerDefinition,
+  swaggerDefinition,
   // Path files to be processes. for: {openapi: '3.0.0'}
-  apis: [
-    './src/routes/*.ts',
-    './src/models/*.ts',
-    './dist/routes/*.js',
-    './dist/models/*.js',
-  ],
+  apis: [ '../routes/*.js', '../models/*.js' ],
   // files: ['../routes/*.js', '../models/*.js'],  // Path files to be processes. for: {swagger: '2.0'}
   // basedir: __dirname, //app absolute path
   // onValidateError: (errors, req, res, next) => { // global handler for validation errors
