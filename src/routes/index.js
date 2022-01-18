@@ -1,6 +1,4 @@
-const { errors } = require('celebrate')
 const { Router } = require('express')
-
 const router = Router()
 
 // ------ Add JWT to chosen routes
@@ -22,10 +20,7 @@ router.get('/docs', swaggerUi.setup(specs, { explorer: true }))
 // Health-check Endpoint
 router.get('/health', (_req, res) => { res.send('200') })
 
-router.use(errors())
-
 module.exports = router
-
 
 // ------ Set Default Components for OpenAPI documentation
 
