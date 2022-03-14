@@ -2,6 +2,7 @@ const mongoose = require('mongoose')
 const Boom     = require('@hapi/boom')
 const uniqueV  = require('mongoose-unique-validator')
 const { mergeDeep } = require('../services/methods')
+const MESSAGES = require('../services/i18n/types')
 
 const Schema = mongoose.Schema
 
@@ -73,7 +74,7 @@ async function list(queryData) {
 
 async function details(modelId) {
   const model = await Model.findById(modelId)
-  if(!model || model.deletedAt !== 0) throw Boom.notFound('Model not found.')
+  if(!model || model.deletedAt !== 0) throw Boom.notFound(MESSAGES.MODEL_NOT_FOUND)
   return model
 }
 

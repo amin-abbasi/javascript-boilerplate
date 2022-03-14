@@ -1,4 +1,5 @@
 const Boom = require('@hapi/boom')
+const MESSAGES = require('../services/i18n/types')
 
 function createMessage(error, reqKey) {
   const errors = {}
@@ -25,7 +26,7 @@ function validate(dataValidate) {
         else req[key] = result?.value
       }
 
-      if(Object.keys(errors).length !== 0) throw Boom.badRequest('Validation Error', errors)
+      if(Object.keys(errors).length !== 0) throw Boom.badRequest(MESSAGES.VALIDATION_ERROR, errors)
       next()
     } catch (error) { next(error) }
   }

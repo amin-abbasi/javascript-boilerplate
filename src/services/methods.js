@@ -1,5 +1,6 @@
 const fetch  = require('node-fetch')
 const config = require('../configs')
+const MESSAGES = require('../services/i18n/types')
 
 /**
  * Check if an object is JSON
@@ -86,7 +87,7 @@ function setError(statusCode, message, errors) {
  * @param    {object}    query      API Query [Optional] - { [key: string]: string }
  * @return   {Promise<object>}      returns response
  */
-export async function restAPI(data) {
+async function restAPI(data) {
   try {
     const { method, baseUrl, pathUrl, headers, body, query } = data
     let URL = `${baseUrl}${pathUrl || ''}`
@@ -114,7 +115,7 @@ export async function restAPI(data) {
 
   } catch (error) {
     console.log(' ---- Rest API Error: ', error)
-    throw Boom.serverUnavailable(`Connection to '${data.service || data.baseUrl}' service failed. Please contact customer service.`)
+    throw Boom.serverUnavailable(MESSAGES.SERVICE_UNAVAILABLE, { service: data.service })
   }
 }
 

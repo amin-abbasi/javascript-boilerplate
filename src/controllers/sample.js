@@ -1,4 +1,6 @@
-const Boom   = require('@hapi/boom')
+const Boom = require('@hapi/boom')
+const MESSAGES = require('../services/i18n/types')
+
 const Sample = require('../models/sample')
 
 const exportResult = {
@@ -77,7 +79,7 @@ const exportResult = {
   async secureAction(req, res, next) {
     try {
       // Check User in Auth Header
-      if(req.user.role !== 'admin') throw Boom.unauthorized('Invalid User.')
+      if(req.user.role !== 'admin') throw Boom.unauthorized(MESSAGES.USER_FORBIDDEN)
 
       const sampleId = req.params.sampleId
       const result = await Sample.details(sampleId)

@@ -8,6 +8,7 @@ const Jwt    = require('jsonwebtoken')
 const Boom   = require('@hapi/boom')
 const config = require('../configs')
 const redis  = require('./redis')
+const MESSAGES = require('../services/i18n/types')
 
 // Creates JWT Token
 function create(data, expire = config.jwt.expiration) {
@@ -85,7 +86,7 @@ async function isValid(token) {
 
   } catch (err) {
     console.log(' >>> JWT Token isValid error: ', err)
-    throw Boom.unauthorized('Invalid Token')
+    throw Boom.unauthorized(MESSAGES.UNAUTHORIZED)
   }
 }
 
