@@ -1,7 +1,7 @@
 // ------ Add npm modules
 const express = require('express')
 const helmet  = require('helmet')
-const cors    = require('cors')
+// const cors    = require('cors')
 const { urlencoded, json } = require('body-parser')
 
 const app = express()
@@ -11,7 +11,7 @@ const app = express()
 app.use(urlencoded({ extended: true }))
 app.use(json())
 app.use(helmet())
-app.use(cors())
+// app.use(cors())
 
 // ------ Add config to access everywhere
 const config = require('./configs')

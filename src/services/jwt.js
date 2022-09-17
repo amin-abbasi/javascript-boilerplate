@@ -9,6 +9,11 @@ const Boom   = require('@hapi/boom')
 const config = require('../configs')
 const redis  = require('./redis')
 
+const KEY_TYPES = {
+  VALID: 'valid',
+  BLOCKED: 'blocked'
+}
+
 // Creates JWT Token
 function create(data, expire = config.jwt.expiration) {
   const secretKey = config.jwt.key
@@ -18,7 +23,7 @@ function create(data, expire = config.jwt.expiration) {
   }
   const token = Jwt.sign(data, secretKey, options)
   const key = `${config.jwt.cache_prefix}${token}`
-  redis.set(key, 'valid')
+  redis.set(key, KEY_TYPES.VALID)
   return token
 }
 
@@ -28,7 +33,7 @@ function createNonExpire(data) {
     algorithm: config.jwt.algorithm
   })
   const key = `${config.jwt.cache_prefix}${token}`
-  redis.set(key, 'valid')
+  redis.set(key, KEY_TYPES.VALID)
   return token
 }
 
@@ -39,12 +44,12 @@ function decode(token) {
 
 // Blocks JWT Token from cache
 function block(token) {
-  if (!token) throw new Error('Token is undefined.')
+  if (!token) throw Boom.badData('Token is undefined.')
   const decoded = Jwt.decode(token)
   const key = `${config.jwt.cache_prefix}${token}`
   if (decoded.exp) {
-    const expiration = decoded.exp - Date.now()
-    redis.multi().set(key, 'blocked').expire(key, expiration).exec()
+    const expiration = decoded.exp - Math.floor(Date.now() / 1000)
+    redis.multi().set(key, KEY_TYPES.BLOCKED).expire(key, expiration).exec()
   } else {
     redis.del(key)
   }
@@ -52,37 +57,33 @@ function block(token) {
 
 // Renew JWT Token when is going to be expired
 function renew(token, expire) {
-  if (!token) throw new Error('Token is undefined.')
-  if (!config.jwt.allow_renew) throw new Error('Renewing tokens is not allowed.')
+  if (!token) throw Boom.badData('Token is undefined.')
+  if (!config.jwt.allow_renew) throw Boom.methodNotAllowed('Renewing tokens is not allowed.')
 
-  const now = new Date().getTime()
   const decoded = Jwt.decode(token)
   if (!decoded.exp) return token
-  if (decoded.exp - now > config.jwt.renew_threshold) return token
+  if (decoded.exp - Math.floor(Date.now() / 1000) > config.jwt.renew_threshold) return token
 
-  this.block(token)
+  block(token)
   if (decoded.iat) delete decoded.iat
   if (decoded.exp) delete decoded.exp
-  return this.create(decoded, expire || config.jwt.expiration)
+  return create(decoded, expire || config.jwt.expiration)
 }
 
 // Checks the validity of JWT Token
 async function isValid(token) {
   try {
     const key = `${config.jwt.cache_prefix}${token}`
-    const asyncRedisGet = promisify(redis.get).bind(redis)
-    const value = await asyncRedisGet(key)
+    const value = await redis.get(key)
+    if(!value) return false    // token does not exist in Redis DB
     const decoded = Jwt.decode(token)
 
-    if (decoded.exp) { // expire token
+    const now = Math.floor(Date.now() / 1000)
+    if(!decoded.exp) return decoded                       // token is non-expired type
+    if(decoded.exp < now) return false                    // token is expired
+    if(value && value !== KEY_TYPES.VALID) return false   // token is revoked
 
-      if (decoded.exp >= new Date().getTime()) { // token is not expired yet
-        if (value === 'valid') return decoded    // token is not revoked
-        else return false   // token is revoked
-      } else return false   // token is expired
-
-    } else return decoded   // a non-expire token [no exp in object]
-
+    return decoded
   } catch (err) {
     console.log(' >>> JWT Token isValid error: ', err)
     throw Boom.unauthorized('Invalid Token')
