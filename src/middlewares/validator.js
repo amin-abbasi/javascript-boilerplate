@@ -1,9 +1,14 @@
 const Boom = require('@hapi/boom')
+const MESSAGES = require('../services/i18n/types')
 
-function createMessage(error) {
-  const splitMessage = error.message.split('\"')
-  const key = splitMessage[1]
-  return { [key]: [error.message] }
+function createMessage(error, reqKey) {
+  const errors = {}
+  for (let i = 0; i < error.details.length; i++) {
+    const message = error.details[i].message
+    const key = message.split('\"')[1]
+    errors[key] = [ message + ` (${reqKey})` ]
+  }
+  return errors
 }
 
 function validate(dataValidate) {
@@ -12,15 +17,16 @@ function validate(dataValidate) {
       let errors = {}
 
       const keys = Object.keys(dataValidate)
-      keys.forEach(key => {
+      for(let i = 0; i < keys.length; i++) {
+        const key = keys[i]
         const data = dataValidate[key]
         const filledData = req[key]
-        const result = data.validate(filledData)
-        if(result?.error) errors = { ...errors, ...createMessage(result.error) }
+        const result = data.validate(filledData, { abortEarly: false })
+        if(result?.error) errors = { ...errors, ...createMessage(result.error, key) }
         else req[key] = result?.value
-      })
+      }
 
-      if(Object.keys(errors).length !== 0) throw Boom.badRequest('Validation Error', errors)
+      if(Object.keys(errors).length !== 0) throw Boom.badRequest(MESSAGES.VALIDATION_ERROR, errors)
       next()
     } catch (error) { next(error) }
   }

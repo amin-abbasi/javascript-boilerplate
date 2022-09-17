@@ -1,5 +1,6 @@
 const fetch  = require('node-fetch')
 const config = require('../configs')
+const MESSAGES = require('../services/i18n/types')
 
 /**
  * Check if an object is JSON
@@ -71,6 +72,11 @@ function setToken(userId, role, rememberMe, email, mobile) {
   return `Bearer ${accessToken}`
 }
 
+
+function setError(statusCode, message, errors) {
+  return { statusCode, message, errors }
+}
+
 /**
  * Simple Rest API function to do something from a 3rd party
  * @param    {string}    method     API Method [Required] - `POST` | `GET` | `PUT` | `DELETE`
@@ -81,8 +87,9 @@ function setToken(userId, role, rememberMe, email, mobile) {
  * @param    {object}    query      API Query [Optional] - { [key: string]: string }
  * @return   {Promise<object>}      returns response
  */
-async function restAPI(method, baseUrl, pathUrl, headers, body, query) {
+async function restAPI(data) {
   try {
+    const { method, baseUrl, pathUrl, headers, body, query } = data
     let URL = `${baseUrl}${pathUrl || ''}`
     const opt = {
       method,
@@ -94,14 +101,21 @@ async function restAPI(method, baseUrl, pathUrl, headers, body, query) {
     if(query) URL += ('?' + new URLSearchParams(query).toString())
 
     const response = await fetch(URL, opt)
-    console.log('response: ', response)
-    const result = await response.json()
-    if(!response.ok) return { success: false, error: result }
+    const text = await response.text()
+    const result = tryJSON(text)
+    if(!result) return {
+      success: false,
+      error: setError(555, 'Invalid data to parse to JSON.', text)
+    }
+    if(!response.ok) return {
+      success: false,
+      error: setError(response.status, result.message || `${data.service} failed.`, result)
+    }
     return { success: true, result }
 
   } catch (error) {
     console.log(' ---- Rest API Error: ', error)
-    return { success: false, error }
+    throw Boom.serverUnavailable(MESSAGES.SERVICE_UNAVAILABLE, { service: data.service })
   }
 }
 

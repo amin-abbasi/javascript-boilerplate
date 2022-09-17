@@ -42,6 +42,10 @@ app.set('config', config)
 // const methods = require('./services/methods')
 // app.set('methods', methods)
 
+// ------ Add i18n to system
+const i18n = require('./services/i18n')
+app.use(i18n.init)
+
 // ------ Add logger to system
 const logger = require('./middlewares/logger')
 app.use(logger)
