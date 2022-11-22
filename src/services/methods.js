@@ -1,4 +1,4 @@
-const fetch  = require('node-fetch')
+const axios  = require('axios')
 const config = require('../configs')
 const MESSAGES = require('../services/i18n/types')
 
@@ -100,7 +100,7 @@ async function restAPI(data) {
     if(headers) opt.headers = { ...opt.headers, ...headers }
     if(query) URL += ('?' + new URLSearchParams(query).toString())
 
-    const response = await fetch(URL, opt)
+    const response = await axios(URL, opt)
     const text = await response.text()
     const result = tryJSON(text)
     if(!result) return {
