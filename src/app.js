@@ -1,22 +1,13 @@
-// ------ Add npm modules
 const express = require('express')
 const helmet  = require('helmet')
-// const cors    = require('cors')
 
+// ------ Initialize
 const app = express()
 
-// ------ Initialize & Use Middle-Wares
-// app.set('trust proxy', 1)
+// ------ Middlewares
 app.use(express.urlencoded({ extended: true }))
 app.use(express.json())
 app.use(helmet())
-// app.use(cors())
-
-// ------ Add config to access everywhere
-const config = require('./configs')
-app.set('config', config)
-
-// TODO: Add other caching systems (like 'RabbitMQ') in the future
 
 // ------ Socket.io Integration
 // const http   = require('http')
@@ -28,18 +19,6 @@ app.set('config', config)
 // ------ Allows cross-origin domains to access this API
 // const initCors = require('./middlewares/cors')
 // app.use(initCors)
-
-// ------ Add Redis to system globally [Caching System]
-// const redis = require('./services/redis')
-// app.set('redis', redis)
-
-// ------ Add JWT to system globally
-// const jwt = require('express-jwt')
-// app.use(jwt({ secret: config.jwt.key }))
-
-// ------ Require global methods
-// const methods = require('./services/methods')
-// app.set('methods', methods)
 
 // ------ Add i18n to system
 const i18n = require('./middlewares/i18n')
@@ -53,8 +32,8 @@ app.use(logger)
 const router = require('./routes')
 app.use('/api', router)
 
-// ------ Add Response Decorator (& error handler) to system
-const decorator = require('./middlewares/decorator')
-app.use(decorator)
+// ------ Add Response Transformer
+const transformer = require('./middlewares/transformer')
+app.use(transformer)
 
 module.exports = app
