@@ -14,6 +14,8 @@ if(DB_USER && DB_PASS) {
   options.pass = DB_PASS
 }
 
+mongoose.set('strictQuery', false)
+
 async function connectDB() {
   try {
     // Mongoose Debug Mode [set it as `false` in production]

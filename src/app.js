@@ -2,14 +2,13 @@
 const express = require('express')
 const helmet  = require('helmet')
 // const cors    = require('cors')
-const { urlencoded, json } = require('body-parser')
 
 const app = express()
 
 // ------ Initialize & Use Middle-Wares
 // app.set('trust proxy', 1)
-app.use(urlencoded({ extended: true }))
-app.use(json())
+app.use(express.urlencoded({ extended: true }))
+app.use(express.json())
 app.use(helmet())
 // app.use(cors())
 
