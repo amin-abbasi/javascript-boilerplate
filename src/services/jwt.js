@@ -1,14 +1,8 @@
-
-// ---------------------------------------------------------
-// ------------------ JWT Token Functions ------------------
-// ---------------------------------------------------------
-
-const { promisify } = require('util')
 const Jwt    = require('jsonwebtoken')
 const Error  = require('http-errors')
 const config = require('../configs')
 const redis  = require('./redis')
-const MESSAGES = require('../services/i18n/types')
+const MESSAGES = require('../middlewares/i18n/types')
 
 const KEY_TYPES = {
   VALID: 'valid',

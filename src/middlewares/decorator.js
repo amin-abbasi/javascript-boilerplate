@@ -1,6 +1,6 @@
 const { STATUS_CODES } = require('http')
 const config = require('../configs')
-const MESSAGES = require('../services/i18n/types')
+const MESSAGES = require('./i18n/types')
 
 function decorator(err, req, res, next) {
 
@@ -34,7 +34,7 @@ function decorator(err, req, res, next) {
     statusCode: err.statusCode || (err.status || (err.code || 500)),
     message: err.message || STATUS_CODES[500],
     originalMessage: '',
-    body: err.data || null
+    body: err.data || err.errors || null
   }
 
   if(typeof response.statusCode != 'number') {
@@ -53,7 +53,7 @@ function decorator(err, req, res, next) {
         response.originalMessage = response.message
         response.message = MESSAGES.UNHANDLED_SERVER_ERROR
       }
-      response.message = res.__(response.message)
+      response.message = res.t(response.message, res.language)
     }
   }
 

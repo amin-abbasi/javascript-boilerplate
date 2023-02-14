@@ -1,5 +1,5 @@
 const Error = require('http-errors')
-const MESSAGES = require('../services/i18n/types')
+const MESSAGES = require('../middlewares/i18n/types')
 
 const Sample = require('../models/sample')
 

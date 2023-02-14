@@ -1,5 +1,5 @@
 const Error = require('http-errors')
-const MESSAGES = require('../services/i18n/types')
+const MESSAGES = require('./i18n/types')
 
 function createMessage(error, reqKey) {
   const errors = {}
@@ -26,7 +26,7 @@ function validate(dataValidate) {
         else req[key] = result?.value
       }
 
-      if(Object.keys(errors).length !== 0) throw Error.BadRequest(MESSAGES.VALIDATION_ERROR, errors)
+      if(Object.keys(errors).length !== 0) throw Error(400, MESSAGES.VALIDATION_ERROR, { errors })
       next()
     } catch (error) { next(error) }
   }

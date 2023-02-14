@@ -1,7 +1,7 @@
 const Error  = require('http-errors')
 const Jwt    = require('../services/jwt')
 const config = require('../configs')
-const MESSAGES = require('../services/i18n/types')
+const MESSAGES = require('./i18n/types')
 
 // Function to set needed header auth
 async function checkToken(req, _res, next) {

@@ -2,7 +2,7 @@ const mongoose = require('mongoose')
 const Error    = require('http-errors')
 const uniqueV  = require('mongoose-unique-validator')
 const { mergeDeep } = require('../services/methods')
-const MESSAGES = require('../services/i18n/types')
+const MESSAGES = require('../middlewares/i18n/types')
 
 const Schema = mongoose.Schema
 

@@ -1,7 +1,6 @@
 const Error  = require('http-errors')
 const axios  = require('axios')
-const config = require('../configs')
-const MESSAGES = require('../services/i18n/types')
+const MESSAGES = require('../middlewares/i18n/types')
 
 /**
  * Check if an object is JSON
