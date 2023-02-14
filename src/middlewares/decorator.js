@@ -12,12 +12,6 @@ function decorator(err, req, res, next) {
     console.log(' ------- ResDec - Mongoose-Unique-Validator ERROR:', err)
   }
 
-  if(err.isBoom) {
-    err.statusCode = err.output.statusCode
-    err.message = err.output.payload.message
-    console.log(' ------- ResDec - BOOM ERROR:', err)
-  }
-
   if(err.joi) {
     err.statusCode = 400
     err.message = err.joi.details

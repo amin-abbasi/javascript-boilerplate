@@ -1,3 +1,4 @@
+const Error  = require('http-errors')
 const axios  = require('axios')
 const config = require('../configs')
 const MESSAGES = require('../services/i18n/types')
@@ -115,7 +116,7 @@ async function restAPI(data) {
 
   } catch (error) {
     console.log(' ---- Rest API Error: ', error)
-    throw Boom.serverUnavailable(MESSAGES.SERVICE_UNAVAILABLE, { service: data.service })
+    throw Error.ServiceUnavailable(MESSAGES.SERVICE_UNAVAILABLE, { service: data.service })
   }
 }
 

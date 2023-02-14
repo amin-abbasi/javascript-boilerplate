@@ -5,7 +5,7 @@
 
 const { promisify } = require('util')
 const Jwt    = require('jsonwebtoken')
-const Boom   = require('@hapi/boom')
+const Error  = require('http-errors')
 const config = require('../configs')
 const redis  = require('./redis')
 const MESSAGES = require('../services/i18n/types')
@@ -45,7 +45,7 @@ function decode(token) {
 
 // Blocks JWT Token from cache
 function block(token) {
-  if (!token) throw Boom.badData('Token is undefined.')
+  if (!token) throw Error.UnprocessableEntity('Token is undefined.')
   const decoded = Jwt.decode(token)
   const key = `${config.jwt.cache_prefix}${token}`
   if (decoded.exp) {
@@ -58,8 +58,8 @@ function block(token) {
 
 // Renew JWT Token when is going to be expired
 function renew(token, expire) {
-  if (!token) throw Boom.badData('Token is undefined.')
-  if (!config.jwt.allow_renew) throw Boom.methodNotAllowed('Renewing tokens is not allowed.')
+  if (!token) throw Error.UnprocessableEntity('Token is undefined.')
+  if (!config.jwt.allow_renew) throw Error.MethodNotAllowed('Renewing tokens is not allowed.')
 
   const decoded = Jwt.decode(token)
   if (!decoded.exp) return token
@@ -87,7 +87,7 @@ async function isValid(token) {
     return decoded
   } catch (err) {
     console.log(' >>> JWT Token isValid error: ', err)
-    throw Boom.unauthorized(MESSAGES.UNAUTHORIZED)
+    throw Error.Unauthorized(MESSAGES.UNAUTHORIZED)
   }
 }
 

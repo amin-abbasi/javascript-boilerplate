@@ -1,4 +1,4 @@
-const Boom   = require('@hapi/boom')
+const Error  = require('http-errors')
 const Jwt    = require('../services/jwt')
 const config = require('../configs')
 const MESSAGES = require('../services/i18n/types')
@@ -7,9 +7,9 @@ const MESSAGES = require('../services/i18n/types')
 async function checkToken(req, _res, next) {
   try {
     const authToken = req.headers.authorization.split(' ')[1]
-    if (!authToken || authToken === '') throw Boom.unauthorized(MESSAGES.UNAUTHORIZED)
+    if (!authToken || authToken === '') throw Error.Unauthorized(MESSAGES.UNAUTHORIZED)
     const user = await Jwt.isValid(authToken)
-    if (!user) throw Boom.unauthorized(MESSAGES.UNAUTHORIZED)
+    if (!user) throw Error.Unauthorized(MESSAGES.UNAUTHORIZED)
     req.user = user
     next()
   }
@@ -26,7 +26,7 @@ function checkRole(roles) {
     try {
       const validRoles = roles ? roles : [config.roleTypes.normal]
       const user = req.user
-      if (!user || !validRoles.includes(user.role)) throw Boom.unauthorized(MESSAGES.UNAUTHORIZED)
+      if (!user || !validRoles.includes(user.role)) throw Error.Unauthorized(MESSAGES.UNAUTHORIZED)
       next()
     }
     catch (error) {
