@@ -8,7 +8,7 @@ const { REDIS_HOST, REDIS_PORT, REDIS_PASS } = config.env
 const url = `redis://${ REDIS_PASS ? `:${REDIS_PASS}@` : '' }${REDIS_HOST}:${REDIS_PORT}`
 
 const options = { url }
-if(REDIS_PASS) options.password = REDIS_PASS
+if (REDIS_PASS) options.password = REDIS_PASS
 
 const client = redis.createClient(options)
 client.on('error', (err) => console.log('Redis Client Error: ', err))

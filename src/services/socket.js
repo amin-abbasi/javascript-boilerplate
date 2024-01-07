@@ -10,7 +10,6 @@ io.sockets.on('connection', (socket) => {
     // ... do something
     io.emit('test', data)
   })
-
 })
 
 module.exports = io

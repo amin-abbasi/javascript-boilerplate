@@ -1,7 +1,8 @@
-const Jwt    = require('jsonwebtoken')
-const Error  = require('http-errors')
+const Jwt = require('jsonwebtoken')
+const Error = require('http-errors')
+
+const redis = require('./redis')
 const config = require('../configs')
-const redis  = require('./redis')
 const MESSAGES = require('../middlewares/i18n/types')
 
 const KEY_TYPES = {
@@ -53,11 +54,13 @@ function block(token) {
 // Renew JWT Token when is going to be expired
 function renew(token, expire) {
   if (!token) throw Error.UnprocessableEntity('Token is undefined.')
-  if (!config.jwt.allow_renew) throw Error.MethodNotAllowed('Renewing tokens is not allowed.')
+  if (!config.jwt.allow_renew)
+    throw Error.MethodNotAllowed('Renewing tokens is not allowed.')
 
   const decoded = Jwt.decode(token)
   if (!decoded.exp) return token
-  if (decoded.exp - Math.floor(Date.now() / 1000) > config.jwt.renew_threshold) return token
+  if (decoded.exp - Math.floor(Date.now() / 1000) > config.jwt.renew_threshold)
+    return token
 
   block(token)
   if (decoded.iat) delete decoded.iat
@@ -70,13 +73,13 @@ async function isValid(token) {
   try {
     const key = `${config.jwt.cache_prefix}${token}`
     const value = await redis.get(key)
-    if(!value) return false    // token does not exist in Redis DB
+    if (!value) return false // token does not exist in Redis DB
     const decoded = Jwt.decode(token)
 
     const now = Math.floor(Date.now() / 1000)
-    if(!decoded.exp) return decoded                       // token is non-expired type
-    if(decoded.exp < now) return false                    // token is expired
-    if(value && value !== KEY_TYPES.VALID) return false   // token is revoked
+    if (!decoded.exp) return decoded // token is non-expired type
+    if (decoded.exp < now) return false // token is expired
+    if (value && value !== KEY_TYPES.VALID) return false // token is revoked
 
     return decoded
   } catch (err) {

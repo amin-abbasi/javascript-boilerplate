@@ -2,18 +2,21 @@ const numbers = '0123456789',
   alphabets = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz',
   specials = '!$%^&*()_+|~-=`{}[]:;<>?,./'
 
+const DEFAULT_LENGTH = 8
+const DEFAULT_CHARSET = 'all'
+
 function useDefault(options) {
-  options || (options = {})
-  return {
-    length: options.length || 8,
-    charset: options.charset || 'all',
-    exclude: Array.isArray(options.exclude) ? options.exclude : [],
+  const defaultOptions = {
+    length: options?.length || DEFAULT_LENGTH,
+    charset: options?.charset || DEFAULT_CHARSET,
+    exclude: Array.isArray(options?.exclude) ? options.exclude : []
   }
+  return defaultOptions
 }
 
 function buildChars(options) {
   let chars = ''
-  switch (options?.charset) {
+  switch (options.charset) {
     case 'numeric':
       chars = numbers
       break
@@ -27,21 +30,25 @@ function buildChars(options) {
       chars = numbers + alphabets + specials
       break
   }
-  if(options?.exclude)
-    for (let i = 0; i <= options.exclude.length; i++) {
+  if (options.exclude) {
+    for (let i = 0; i < options.exclude.length; i++) {
       chars = chars.replace(options.exclude[i], '')
     }
+  }
   return chars
 }
 
-module.exports = function random(options) {
+function random(options) {
   options = useDefault(options)
   const length = options.length
-  let index, random = ''
-  const allChars = buildChars(options), charsLength = allChars.length
+  let random = ''
+  const allChars = buildChars(options)
+  const charsLength = allChars.length
   for (let i = 1; i <= length; i++) {
-    index = Math.floor(Math.random() * charsLength)
+    const index = Math.floor(Math.random() * charsLength)
     random += allChars.substring(index, index + 1)
   }
   return random
 }
+
+module.exports = { random }
