@@ -2,93 +2,73 @@ const Error = require('http-errors')
 const MESSAGES = require('../middlewares/i18n/types')
 
 const Sample = require('../models/sample')
+const { handlerFn } = require('../utils/handler')
 
 const exportResult = {
-
   // Create Sample
-  async create(req, res, next) {
-    try {
-      const data = req.body
-      const result = await Sample.add(data)
+  create: handlerFn(async (req, res, next) => {
+    const data = req.body
+    const result = await Sample.add(data)
 
-      // ---- Use Socket.io
-      // const io: SocketIO.Server = req.app.get('io')
-      // io.emit('someEvent', { someData: '...' })
+    // ---- Use Socket.io
+    // const io: SocketIO.Server = req.app.get('io')
+    // io.emit('someEvent', { someData: '...' })
 
-      res.result = result
-      next(res)
-    } catch (err) { next(err) }
-  },
+    res.result = result
+    next(res)
+  }),
 
   // List all Sample
-  async list(req, res, next) {
-    try {
-      const query = req.query
-      const result = await Sample.list(query)
-      res.result = result
-      next(res)
-    }
-    catch (err) { next(err) }
-  },
+  list: handlerFn(async (req, res, next) => {
+    const query = req.query
+    const result = await Sample.list(query)
+    res.result = result
+    next(res)
+  }),
 
   // Show Sample Details
-  async details(req, res, next) {
-    try {
-      const sampleId = req.params.sampleId
-      const result = await Sample.details(sampleId)
-      res.result = result
-      next(res)
-    }
-    catch (err) { next(err) }
-  },
+  details: handlerFn(async (req, res, next) => {
+    const sampleId = req.params.sampleId
+    const result = await Sample.details(sampleId)
+    res.result = result
+    next(res)
+  }),
 
   // Update Sample
-  async update(req, res, next) {
-    try {
-      const sampleId = req.params.sampleId
-      const result = await Sample.updateById(sampleId, req.body)
-      res.result = result
-      next(res)
-    }
-    catch (err) { next(err) }
-  },
+  update: handlerFn(async (req, res, next) => {
+    const sampleId = req.params.sampleId
+    const result = await Sample.updateById(sampleId, req.body)
+    res.result = result
+    next(res)
+  }),
 
   // Archive Sample (Soft Delete)
-  async archive(req, res, next) {
-    try {
-      const sampleId = req.params.sampleId
-      const result = await Sample.softDelete(sampleId)
-      res.result = result
-      next(res)
-    }
-    catch (err) { next(err) }
-  },
+  archive: handlerFn(async (req, res, next) => {
+    const sampleId = req.params.sampleId
+    const result = await Sample.softDelete(sampleId)
+    res.result = result
+    next(res)
+  }),
 
   // Delete Sample From DB
-  async delete(req, res, next) {
-    try {
-      const sampleId = req.params.sampleId
-      const result = await Sample.remove(sampleId)
-      res.result = result
-      next(res)
-    }
-    catch (err) { next(err) }
-  },
+  delete: handlerFn(async (req, res, next) => {
+    const sampleId = req.params.sampleId
+    const result = await Sample.remove(sampleId)
+    res.result = result
+    next(res)
+  }),
 
   // Secure Action For Sample
-  async secureAction(req, res, next) {
-    try {
-      // Check User in Auth Header
-      if(req.user.role !== 'admin') throw Error.Unauthorized(MESSAGES.USER_FORBIDDEN)
+  secureAction: handlerFn(async (req, res, next) => {
+    // Check User in Auth Header
+    if (req.user.role !== 'admin')
+      throw Error.Unauthorized(MESSAGES.USER_FORBIDDEN)
 
-      const sampleId = req.params.sampleId
-      const result = await Sample.details(sampleId)
-      res.result = result
-      next(res)
-    }
-    catch (err) { next(err) }
-  },
-
+    const sampleId = req.params.sampleId
+    const result = await Sample.details(sampleId)
+    res.result = result
+    next(res)
+  })
 }
 
 module.exports = exportResult
