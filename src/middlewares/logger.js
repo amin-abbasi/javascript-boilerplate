@@ -79,7 +79,7 @@ function init(options) {
 
 // Logger Options [To be filled by developer]
 const loggerOptions = {
-  colored: false,
+  colored: true,
   mode: 'short',
   saveToFile: true,
   pathToSave: path.join(__dirname, '../../logs')
