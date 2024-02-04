@@ -1,5 +1,5 @@
 const Jwt = require('jsonwebtoken')
-const Error = require('http-errors')
+const Error = require('../services/http_errors')
 
 const redis = require('./redis')
 const config = require('../configs')

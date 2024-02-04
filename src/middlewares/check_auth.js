@@ -1,4 +1,4 @@
-const Error  = require('http-errors')
+const Error  = require('../services/http_errors')
 const Jwt    = require('../services/jwt')
 const config = require('../configs')
 const MESSAGES = require('./i18n/types')

@@ -1,6 +1,6 @@
 const mongoose = require('mongoose')
-const Error    = require('http-errors')
 const uniqueV  = require('mongoose-unique-validator')
+const Error    = require('../services/http_errors')
 const { mergeDeep } = require('../services/methods')
 const MESSAGES = require('../middlewares/i18n/types')
 

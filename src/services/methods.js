@@ -1,5 +1,5 @@
-const Error  = require('http-errors')
-const axios  = require('axios')
+const axios = require('axios')
+const Error = require('../services/http_errors')
 const MESSAGES = require('../middlewares/i18n/types')
 const jwt = require('./jwt')
 
