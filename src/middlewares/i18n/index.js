@@ -12,12 +12,16 @@ function t(message, lang = 'en') {
 
 // middleware to set language
 module.exports = function i18n(req, res, next) {
-  const headerLang = req.headers['content-language'] || req.headers['accept-language']
+  const headerLang =
+    req.headers['content-language'] || req.headers['accept-language']
 
   // default language: 'en'
   let language = SUPPORTED_LANGUAGES[0]
 
-  if(typeof headerLang === 'string' && SUPPORTED_LANGUAGES.includes(headerLang)) {
+  if (
+    typeof headerLang === 'string' &&
+    SUPPORTED_LANGUAGES.includes(headerLang)
+  ) {
     language = headerLang
   }
 
