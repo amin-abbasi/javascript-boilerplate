@@ -1,6 +1,6 @@
 const mongoose = require('mongoose')
-const uniqueV  = require('mongoose-unique-validator')
-const Error    = require('../services/http_errors')
+const uniqueV = require('mongoose-unique-validator')
+const Error = require('../services/http_errors')
 const { mergeDeep } = require('../services/methods')
 const MESSAGES = require('../middlewares/i18n/types')
 
@@ -8,16 +8,16 @@ const Schema = mongoose.Schema
 
 // Add your own attributes in schema
 const schema = new Schema({
-  name:  { type: Schema.Types.String, required: true },
+  name: { type: Schema.Types.String, required: true },
   email: { type: Schema.Types.String, required: true, unique: true },
-  any: Schema.Types.Mixed,    // An "anything goes" SchemaType
+  any: Schema.Types.Mixed, // An "anything goes" SchemaType
 
   // Advanced Property type schema
   location: {
     type: {
       _id: false,
       country: { type: Schema.Types.String, required: true },
-      city:    { type: Schema.Types.String, required: true },
+      city: { type: Schema.Types.String, required: true },
       address: { type: Schema.Types.String },
       coordinate: {
         type: {
@@ -32,7 +32,7 @@ const schema = new Schema({
 
   createdAt: { type: Schema.Types.Number },
   updatedAt: { type: Schema.Types.Number },
-  deletedAt: { type: Schema.Types.Number, default: 0 },
+  deletedAt: { type: Schema.Types.Number, default: 0 }
 })
 
 // Apply the Unique Property Validator plugin to schema.
@@ -65,7 +65,9 @@ async function list(queryData) {
   // if(query.name) query.name = { '$regex': query.name, '$options': 'i' }
 
   const total = await Model.countDocuments({ deletedAt: 0 })
-  const result = await Model.find(query).limit(size).skip((page - 1) * size)
+  const result = await Model.find(query)
+    .limit(size)
+    .skip((page - 1) * size)
   return {
     total: total,
     list: result
@@ -74,7 +76,8 @@ async function list(queryData) {
 
 async function details(modelId) {
   const model = await Model.findById(modelId)
-  if(!model || model.deletedAt !== 0) throw Error.NotFound(MESSAGES.MODEL_NOT_FOUND)
+  if (!model || model.deletedAt !== 0)
+    throw Error.NotFound(MESSAGES.MODEL_NOT_FOUND)
   return model
 }
 
@@ -92,7 +95,11 @@ async function updateById(modelId, data) {
 
 async function softDelete(modelId) {
   const model = await details(modelId)
-  return await Model.findByIdAndUpdate(model.id, { deletedAt: Date.now() }, { new: true })
+  return await Model.findByIdAndUpdate(
+    model.id,
+    { deletedAt: Date.now() },
+    { new: true }
+  )
 }
 
 async function remove(modelId) {
@@ -102,10 +109,23 @@ async function remove(modelId) {
 
 async function restore(modelId) {
   const model = await details(modelId)
-  return await Model.findByIdAndUpdate(model.id, { deletedAt: 0 }, { new: true })
+  return await Model.findByIdAndUpdate(
+    model.id,
+    { deletedAt: 0 },
+    { new: true }
+  )
 }
 
-module.exports = { add, list, details, updateById, updateByQuery, softDelete, remove, restore }
+module.exports = {
+  add,
+  list,
+  details,
+  updateById,
+  updateByQuery,
+  softDelete,
+  remove,
+  restore
+}
 
 // --------------- OpenAPI Models Definition ---------------
 

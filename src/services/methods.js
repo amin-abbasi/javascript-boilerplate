@@ -20,10 +20,11 @@ function setToken(userId, role, rememberMe, email, mobile) {
     role,
     iat: new Date().getTime()
   }
-  const accessToken = rememberMe ? jwt.createNonExpire(jwtObject) : jwt.create(jwtObject)
+  const accessToken = rememberMe
+    ? jwt.createNonExpire(jwtObject)
+    : jwt.create(jwtObject)
   return `Bearer ${accessToken}`
 }
-
 
 function setError(statusCode, message, errors) {
   return { statusCode, message, errors }
@@ -45,29 +46,36 @@ async function restAPI(data) {
     let URL = `${baseUrl}${pathUrl || ''}`
     const opt = {
       method,
-      headers: { 'content-type': 'application/json' },
+      headers: { 'content-type': 'application/json' }
     }
 
-    if(method.toUpperCase() !== 'GET' && body) opt.body = JSON.stringify(body)
-    if(headers) opt.headers = { ...opt.headers, ...headers }
-    if(query) URL += ('?' + new URLSearchParams(query).toString())
+    if (method.toUpperCase() !== 'GET' && body) opt.body = JSON.stringify(body)
+    if (headers) opt.headers = { ...opt.headers, ...headers }
+    if (query) URL += '?' + new URLSearchParams(query).toString()
 
     const response = await axios(URL, opt)
     const text = await response.text()
     const result = tryJSON(text)
-    if(!result) return {
-      success: false,
-      error: setError(555, 'Invalid data to parse to JSON.', text)
-    }
-    if(!response.ok) return {
-      success: false,
-      error: setError(response.status, result.message || `${data.service} failed.`, result)
-    }
+    if (!result)
+      return {
+        success: false,
+        error: setError(555, 'Invalid data to parse to JSON.', text)
+      }
+    if (!response.ok)
+      return {
+        success: false,
+        error: setError(
+          response.status,
+          result.message || `${data.service} failed.`,
+          result
+        )
+      }
     return { success: true, result }
-
   } catch (error) {
     console.log(' ---- Rest API Error: ', error)
-    throw Error.ServiceUnavailable(MESSAGES.SERVICE_UNAVAILABLE, { service: data.service })
+    throw Error.ServiceUnavailable(MESSAGES.SERVICE_UNAVAILABLE, {
+      service: data.service
+    })
   }
 }
 
