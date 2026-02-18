@@ -56,27 +56,51 @@ async function saveLog(log, pathToSave, type) {
 function init(options) {
   return function (req, res, next) {
     try {
-      const { mode, saveToFile, pathToSave, colored } = options
-      const { method, url } = req,
+      const { saveToFile, pathToSave } = options
+      const { method, url, ip } = req,
         start = process.hrtime()
-
-      const timestamp = new Date().toISOString().replace('T', ' - ').replace('Z', '')
-      const timeStampText = colored ? color(`[${timestamp}]`, 'lightBlue') : `[${timestamp}]`
 
       res.once('finish', () => {
         const end = process.hrtime(start)
-        const endText = colored ? color(`${processTimeInMS(end)}`, 'green') : `${processTimeInMS(end)}`
-        const status = statusColor(res.statusCode, colored)
-        const request = mode === 'full' ? requestLog(req) : ' '
-        const reqMethod = colored ? color(method, 'yellow') : method
-        const log = `${timeStampText} ${reqMethod}: ${url}${request}${status.text} ${endText}`
-        console.log(log)
-        if (saveToFile) saveLog(log, pathToSave, status.type)
+        const duration = processTimeInMS(end)
+        const status = statusColor(res.statusCode, false)
+
+        const logEntry = {
+          timestamp: new Date().toISOString(),
+          level: status.type,
+          method,
+          url,
+          status: res.statusCode,
+          duration,
+          ip,
+          requestId: req.headers['x-request-id'] || 'N/A'
+        }
+
+        if (options.mode === 'full') {
+          logEntry.request = {
+            headers: req.headers,
+            params: req.params,
+            query: req.query,
+            body: req.body
+          }
+        }
+
+        const logString = JSON.stringify(logEntry)
+        console.log(logString)
+
+        if (saveToFile) saveLog(logString, pathToSave, status.type)
       })
 
       next()
     } catch (error) {
-      console.log(color('>>>>> Log Error: ', 'lightRed'), error)
+      console.error(
+        JSON.stringify({
+          timestamp: new Date().toISOString(),
+          level: 'error',
+          message: 'Log Error',
+          error: error.message
+        })
+      )
       next(error)
     }
   }
