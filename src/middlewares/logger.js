@@ -35,13 +35,17 @@ function requestLog(req) {
   return ` ${JSON.stringify({ headers, params, query, body })} `
 }
 
-function saveLog(log, pathToSave, type) {
-  const exists = fs.existsSync(pathToSave)
-  if (!exists) fs.mkdirSync(pathToSave)
+async function saveLog(log, pathToSave, type) {
   const fileName = type === 'error' ? 'error.log' : 'info.log'
-  fs.appendFileSync(path.join(pathToSave, fileName), `\n${log}`, {
-    encoding: 'utf-8'
-  })
+  const filePath = path.join(pathToSave, fileName)
+
+  try {
+    await fs.promises.access(pathToSave)
+  } catch (error) {
+    await fs.promises.mkdir(pathToSave, { recursive: true })
+  }
+
+  await fs.promises.appendFile(filePath, `\n${log}`, { encoding: 'utf-8' })
 }
 
 /**
@@ -56,19 +60,12 @@ function init(options) {
       const { method, url } = req,
         start = process.hrtime()
 
-      const timestamp = new Date()
-        .toISOString()
-        .replace('T', ' - ')
-        .replace('Z', '')
-      const timeStampText = colored
-        ? color(`[${timestamp}]`, 'lightBlue')
-        : `[${timestamp}]`
+      const timestamp = new Date().toISOString().replace('T', ' - ').replace('Z', '')
+      const timeStampText = colored ? color(`[${timestamp}]`, 'lightBlue') : `[${timestamp}]`
 
       res.once('finish', () => {
         const end = process.hrtime(start)
-        const endText = colored
-          ? color(`${processTimeInMS(end)}`, 'green')
-          : `${processTimeInMS(end)}`
+        const endText = colored ? color(`${processTimeInMS(end)}`, 'green') : `${processTimeInMS(end)}`
         const status = statusColor(res.statusCode, colored)
         const request = mode === 'full' ? requestLog(req) : ' '
         const reqMethod = colored ? color(method, 'yellow') : method

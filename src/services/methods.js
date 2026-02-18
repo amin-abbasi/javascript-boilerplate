@@ -20,9 +20,7 @@ function setToken(userId, role, rememberMe, email, mobile) {
     role,
     iat: new Date().getTime()
   }
-  const accessToken = rememberMe
-    ? jwt.createNonExpire(jwtObject)
-    : jwt.create(jwtObject)
+  const accessToken = rememberMe ? jwt.createNonExpire(jwtObject) : jwt.create(jwtObject)
   return `Bearer ${accessToken}`
 }
 
@@ -32,47 +30,45 @@ function setError(statusCode, message, errors) {
 
 /**
  * Simple Rest API function to do something from a 3rd party
- * @param    {string}    method     API Method [Required] - `POST` | `GET` | `PUT` | `DELETE`
- * @param    {string}    baseUrl    API Base URL [Required]
- * @param    {string}    pathUrl    API Path URL [Optional]
- * @param    {object}    headers    API Headers [Optional] - { [key: string]: string }
- * @param    {object}    body       API Body [Optional] - { [key: string]: any }
- * @param    {object}    query      API Query [Optional] - { [key: string]: string }
+ * @param    {object}    data       API Request Data
+ * @param    {string}    data.method     API Method [Required] - `POST` | `GET` | `PUT` | `DELETE`
+ * @param    {string}    data.baseUrl    API Base URL [Required]
+ * @param    {string}    data.pathUrl    API Path URL [Optional]
+ * @param    {object}    data.headers    API Headers [Optional] - { [key: string]: string }
+ * @param    {object}    data.body       API Body [Optional] - { [key: string]: any }
+ * @param    {object}    data.query      API Query [Optional] - { [key: string]: string }
  * @return   {Promise<object>}      returns response
  */
 async function restAPI(data) {
   try {
     const { method, baseUrl, pathUrl, headers, body, query } = data
-    let URL = `${baseUrl}${pathUrl || ''}`
-    const opt = {
-      method,
-      headers: { 'content-type': 'application/json' }
+    const url = `${baseUrl}${pathUrl || ''}`
+
+    const config = {
+      method: method.toLowerCase(),
+      url,
+      headers: {
+        'content-type': 'application/json',
+        ...headers
+      },
+      params: query,
+      data: body
     }
 
-    if (method.toUpperCase() !== 'GET' && body) opt.body = JSON.stringify(body)
-    if (headers) opt.headers = { ...opt.headers, ...headers }
-    if (query) URL += '?' + new URLSearchParams(query).toString()
+    const response = await axios(config)
+    const result = response.data
 
-    const response = await axios(URL, opt)
-    const text = await response.text()
-    const result = tryJSON(text)
-    if (!result)
-      return {
-        success: false,
-        error: setError(555, 'Invalid data to parse to JSON.', text)
-      }
-    if (!response.ok)
-      return {
-        success: false,
-        error: setError(
-          response.status,
-          result.message || `${data.service} failed.`,
-          result
-        )
-      }
     return { success: true, result }
   } catch (error) {
     console.log(' ---- Rest API Error: ', error)
+
+    if (error.response) {
+      return {
+        success: false,
+        error: setError(error.response.status, error.response.data?.message || `${data.service || 'API'} failed.`, error.response.data)
+      }
+    }
+
     throw Error.ServiceUnavailable(MESSAGES.SERVICE_UNAVAILABLE, {
       service: data.service
     })

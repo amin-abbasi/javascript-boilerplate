@@ -1,6 +1,6 @@
 const supertest = require('supertest')
-const config    = require('../src/configs/config')
-const server    = require('../src/server')
+const config = require('../src/configs')
+const server = require('../src/server')
 const body_sample = require('./body_samples/body_sample.json')
 
 jest.setTimeout(30000)
@@ -20,12 +20,10 @@ const url = `${SERVER_PROTOCOL}://${SERVER_HOST}:${SERVER_PORT}/api`
 //   disconnect: (done) => { mongoose.disconnect(done) },
 // }
 
-
 let sampleId
 const request = supertest(url)
 
 describe('Sample Worker', () => {
-
   // beforeAll(() => { mongoDB.connect() })
   // afterAll((done) => { mongoDB.disconnect(done) })
 

@@ -18,7 +18,7 @@ const config = {
   env: env,
 
   // Base URL
-  baseURL: `${env.SERVER_PROTOCOL}://${env.SERVER_HOST}:${env.SERVER_PORT}`,
+  baseURL: `${env.SERVER_PROTOCOL || 'http'}://${env.SERVER_HOST || 'localhost'}:${env.SERVER_PORT || 3003}`,
 
   // Regex
   regex: {

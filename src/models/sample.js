@@ -1,7 +1,7 @@
 const mongoose = require('mongoose')
 const uniqueV = require('mongoose-unique-validator')
 const Error = require('../services/http_errors')
-const { mergeDeep } = require('../services/methods')
+const { mergeDeep } = require('../utils/deep_merge')
 const MESSAGES = require('../middlewares/i18n/types')
 
 const Schema = mongoose.Schema
@@ -43,7 +43,7 @@ schema.plugin(uniqueV, {
 })
 
 // Choose your own model name
-const Model = mongoose.model('Model_Name', schema)
+const Model = mongoose.model('Sample', schema)
 
 async function add(data) {
   const modelData = {
@@ -76,8 +76,7 @@ async function list(queryData) {
 
 async function details(modelId) {
   const model = await Model.findById(modelId)
-  if (!model || model.deletedAt !== 0)
-    throw Error.NotFound(MESSAGES.MODEL_NOT_FOUND)
+  if (!model || model.deletedAt !== 0) throw Error.NotFound(MESSAGES.MODEL_NOT_FOUND)
   return model
 }
 
@@ -95,11 +94,7 @@ async function updateById(modelId, data) {
 
 async function softDelete(modelId) {
   const model = await details(modelId)
-  return await Model.findByIdAndUpdate(
-    model.id,
-    { deletedAt: Date.now() },
-    { new: true }
-  )
+  return await Model.findByIdAndUpdate(model.id, { deletedAt: Date.now() }, { new: true })
 }
 
 async function remove(modelId) {
@@ -109,11 +104,7 @@ async function remove(modelId) {
 
 async function restore(modelId) {
   const model = await details(modelId)
-  return await Model.findByIdAndUpdate(
-    model.id,
-    { deletedAt: 0 },
-    { new: true }
-  )
+  return await Model.findByIdAndUpdate(model.id, { deletedAt: 0 }, { new: true })
 }
 
 module.exports = {
