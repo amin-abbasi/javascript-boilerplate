@@ -1,68 +1,71 @@
-# Micro-service Boilerplate
-This is a micro-service boilerplate written with Javascript and implemented using [Node.js] (Express), [MongoDB] (Mongoose), [Redis], Jest, Socket.io and OpenAPI (Swagger). You can use it to initiate your own server-side application.
+# Javascript Micro-service Boilerplate
 
+This is a high-performance micro-service boilerplate built with Javascript, featuring Express, MongoDB (Mongoose), Redis, Jest, Socket.io, and OpenAPI (Swagger). It's designed to provide a robust and scalable foundation for your backend applications.
 
-## [Name of the application] API
-Your can write your complete description about this app here...
+## Key Features
 
+- **High Performance**: Optimized with asynchronous logging and efficient I/O handling.
+- **Improved Utilities**: Enhanced `restAPI` service with native Axios support and better error handling.
+- **RESTful API**: Clean architecture with Express and Mongoose.
+- **Real-time**: Integrated Socket.io for real-time communication.
+- **Documentation**: Automatic OpenAPI (Swagger) documentation.
+- **Testing**: Comprehensive testing setup with Jest and Supertest.
 
-### Prerequisites / Setting up for first time
-What you need to install before running this app
-ex: Make sure you have git, nvm, npm, [Node.js] installed
+### Prerequisites
 
+- [Node.js](https://nodejs.org/en/download/) (v16+)
+- [MongoDB](https://docs.mongodb.com/manual/installation)
+- [Redis](https://redis.io/download)
+- npm or pnpm
 
-### Get the project and install npms
-- Clone the project `git clone https://github.com/amin-abbasi/javascript-boilerplate.git`
-- Go to the project folder and run: `npm i`
+### Getting Started
 
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/amin-abbasi/javascript-boilerplate.git
+   ```
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Set up your environment:
+   - Copy `.env.example` to `.env` and fill in your details.
 
-### Database Setup
-- Install [MongoDB] and [Redis] in your system and set necessary configurations.
-- Do not forget to check your environment settings in `.env`
+### Running the App
 
+Start the development server:
 
-### Run Application
-You can start the project by:
-
-```
+```bash
 npm start
 ```
 
-You can also install [nodemon] globally in your system and simply use code below:
-```
-npm i -g nodemon
+Or use [nodemon] for development:
 
+```bash
+npm install -g nodemon
 nodemon
 ```
 
+### Testing
 
-#### Note:
-For security reasons, you should put "sslCert" folder into `.gitignore` file in production mode.
+We use Jest for unit and functional testing. Write your tests in the `__tests__` folder and run:
 
-### Test Application
-For test we used Jest for functional testing and unit testing. you can write your own tests in `__test__` folder by creating new `your_entity.test.js` and then just run:
-
-```
-npm run test
+```bash
+npm test
 ```
 
-#### Note: After development and test, you should put the following script in `.gitignore` file to prevent pushing tests files in production mode repositories:
+### Docker Support
 
-```
-# test folder
-__tests__
-```
+Run the entire stack using Docker:
 
-
-### Docker and Deployment
-You can simply set your own configs in `docker-compose.yml` file and run:
+```bash
+docker-compose up --build -d
 ```
-sudo docker-compose up --build -d
-```
-
 
 #### References
+
 [Node.js]: https://nodejs.org/en/download/
 [MongoDB]: https://docs.mongodb.com/manual/installation
 [Redis]: https://redis.io/download
 [nodemon]: https://www.npmjs.com/package/nodemon
+[Axios]: https://axios-http.com/

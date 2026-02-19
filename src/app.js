@@ -1,8 +1,21 @@
 const express = require('express')
-const helmet  = require('helmet')
+const helmet = require('helmet')
+
+const compression = require('compression')
+const rateLimit = require('express-rate-limit')
 
 // ------ Initialize
 const app = express()
+
+// ------ Security & Performance Middlewares
+app.use(compression()) // Compress all responses
+app.use(
+  rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100, // limit each IP to 100 requests per windowMs
+    message: 'Too many requests from this IP, please try again after 15 minutes'
+  })
+)
 
 // ------ Middlewares
 app.use(express.urlencoded({ extended: true }))
@@ -17,8 +30,8 @@ app.use(helmet())
 // app.set('io', io)
 
 // ------ Allows cross-origin domains to access this API
-// const initCors = require('./middlewares/cors')
-// app.use(initCors)
+const initCors = require('./middlewares/cors')
+app.use(initCors)
 
 // ------ Add i18n to system
 const i18n = require('./middlewares/i18n')

@@ -17,23 +17,31 @@ if (DB_USER && DB_PASS) {
 mongoose.set('strictQuery', false)
 
 async function connectDB() {
-  try {
-    // Mongoose Debug Mode [set it as `false` in production]
-    mongoose.set('debug', true)
+  const maxRetries = 5
+  let retries = 0
 
-    await mongoose.connect(dbURL, options)
-    console.log('<<<< Connected to MongoDB >>>>')
+  while (retries < maxRetries) {
+    try {
+      // Mongoose Debug Mode [set it as `false` in production]
+      mongoose.set('debug', config.env.NODE_ENV === 'development')
 
-    mongoose.Promise = global.Promise // Get Mongoose to use the global promise library
-    const db = mongoose.connection // Get the default connection
+      await mongoose.connect(dbURL, options)
+      console.log('<<<< Connected to MongoDB >>>>')
 
-    // Bind connection to error event (to get notification of connection errors)
-    db.on('error', (err) => console.error('MongoDB Connection Error: ', err))
+      mongoose.Promise = global.Promise
+      const db = mongoose.connection
 
-    return db
-  } catch (error) {
-    console.error('MongoDB Connection Error: ', error)
-    process.exit(1)
+      db.on('error', (err) => console.error('MongoDB Connection Error: ', err))
+      return db
+    } catch (error) {
+      retries++
+      console.error(`MongoDB Connection Error (Attempt ${retries}/${maxRetries}): `, error.message)
+      if (retries >= maxRetries) {
+        process.exit(1)
+      }
+      // Wait 5 seconds before retrying
+      await new Promise((resolve) => setTimeout(resolve, 5000))
+    }
   }
 }
 

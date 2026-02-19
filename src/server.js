@@ -1,12 +1,12 @@
 // Your Express Server Configuration Here
 require('reflect-metadata')
-const fs     = require('fs')
-const path   = require('path')
-const http   = require('http')
-const https  = require('https')
-const gach   = require('gach').default
+const fs = require('fs')
+const path = require('path')
+const http = require('http')
+const https = require('https')
+const gach = require('gach').default
 
-const app    = require('./app')
+const app = require('./app')
 const config = require('./configs')
 
 const { NODE_ENV, SERVER_PROTOCOL, SERVER_HOST, SERVER_PORT, DB_TYPE } = config.env
@@ -40,7 +40,6 @@ function setExpressServer(app) {
   return expressServer
 }
 
-
 // ---------------- Add Socket.io ----------------
 // const socket = require('socket.io')
 // const io: socket.Server = socket(expressServer)
@@ -51,17 +50,21 @@ const startServer = async (expressServer) => {
   const port = SERVER_PORT || 4000
   const url = `${SERVER_PROTOCOL || 'http'}://${SERVER_HOST || 'localhost'}:${port}`
   const serverMessage = `API is now running on ${gach(url).color('lightBlue').bold().text} in ${NODE_ENV || 'development'} mode`
-  expressServer.listen(port, () => { console.info(serverMessage) })
+  expressServer.listen(port, () => {
+    console.info(serverMessage)
+  })
 }
 
-(async () => {
-  try {
-    if(DB_TYPE === 'mongodb') await mongoConnect()
-    else await mysqlConnect()
+if (require.main === module) {
+  ;(async () => {
+    try {
+      if (DB_TYPE === 'mongodb') await mongoConnect()
+      else await mysqlConnect()
 
-    const expressServer = setExpressServer(app)
-    await startServer(expressServer)
-  } catch (error) {
-    throw Error(`>>>>> Server Connection Error: ${error}`)
-  }
-})()
+      const expressServer = setExpressServer(app)
+      await startServer(expressServer)
+    } catch (error) {
+      throw Error(`>>>>> Server Connection Error: ${error}`)
+    }
+  })()
+}
