@@ -91,5 +91,5 @@ package-lock.json
 # test snapshots folder
 __snapshots__
 
-# ssl Certificate folder
-# sslCert/*
+# TLS certificate and key: made on each machine (`npm run cert`), never committed
+sslCert/

@@ -46,6 +46,10 @@ npm install -g nodemon
 nodemon
 ```
 
+### HTTPS
+
+With `SERVER_PROTOCOL=https` the server reads `sslCert/server.key` and `sslCert/server.crt`. They are never committed (the folder is in `.gitignore`). For local use, make a self-signed pair with `npm run cert` (needs `openssl`, which Git for Windows includes); in production, use your own certificate, or end TLS at a proxy and keep `SERVER_PROTOCOL=http`.
+
 ### Testing
 
 We use Jest for unit and functional testing. Write your tests in the `__tests__` folder and run:

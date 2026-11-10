@@ -26,7 +26,7 @@ function setExpressServer(app) {
     const crtPath = path.join(__dirname, '../sslCert/server.crt')
     const checkPath = fs.existsSync(keyPath) && fs.existsSync(crtPath)
     if (!checkPath) {
-      console.error('No SSL Certificate found to run HTTPS Server!!')
+      console.error('No TLS certificate in sslCert/: run `npm run cert` for a self-signed one to use locally, or put your own server.key and server.crt there.')
       process.exit(1)
     }
     const privateKey = fs.readFileSync(keyPath, 'utf8')

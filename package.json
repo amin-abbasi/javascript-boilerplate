@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node ./src/server.js",
     "test": "jest --updateSnapshot --detectOpenHandles --coverage --forceExit --verbose",
-    "run": "pm2 start ./src/server.js"
+    "run": "pm2 start ./src/server.js",
+    "cert": "mkdir -p sslCert && openssl req -x509 -newkey rsa:2048 -nodes -sha256 -days 365 -subj /CN=localhost -addext subjectAltName=DNS:localhost,IP:127.0.0.1 -keyout sslCert/server.key -out sslCert/server.crt"
   },
   "repository": {
     "type": "git",
